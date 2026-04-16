@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://api.open-meteo.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' blob: https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://api.open-meteo.com https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net https://firestore.googleapis.com;">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0f1a">
@@ -475,6 +475,8 @@ body{
   100%{transform:translateY(100vh) rotate(600deg);opacity:0}
 }
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -851,6 +853,17 @@ body{
 </div>
 
 <script>
+// Firebase init
+firebase.initializeApp({
+  apiKey:"AIzaSyDv7BTeYoohmy7IB2g7MdOh4s1WzV8r0jg",
+  authDomain:"auschamps26.firebaseapp.com",
+  projectId:"auschamps26",
+  storageBucket:"auschamps26.firebasestorage.app",
+  messagingSenderId:"441581481866",
+  appId:"1:441581481866:web:e1d61bbe90ca2b020ae273"
+});
+const db=firebase.firestore();
+
 // Navigation
 const navBtns=document.querySelectorAll('.nav-btn');
 const pages=document.querySelectorAll('.page');
@@ -1329,25 +1342,22 @@ const ALLRACES=[];
   setTimeout(updateRaceCountdowns,60000);
 })();
 
-// Results tracker - add result inputs to race rows
+// Results tracker - Firestore real-time sync
 (function(){
-  const results=JSON.parse(localStorage.getItem('mudbc-results')||'{}');
+  const resultsRef=db.collection('results');
+
+  // Build a map of race rows by key
+  const rowMap={};
   document.querySelectorAll('.race-row').forEach(row=>{
     const numEl=row.querySelector('.rr-num');
     if(!numEl)return;
     const key=numEl.textContent.trim();
-    const saved=results[key];
-    if(saved){
-      const div=document.createElement('div');
-      div.className='result-saved';
-      div.textContent='\u2705 '+saved;
-      row.querySelector('.rr-cat').appendChild(div);
-    }
+    rowMap[key]=row;
+
     // Tap race row to log result
     row.style.cursor='pointer';
     row.addEventListener('click',()=>{
       if(row.querySelector('.result-input'))return;
-      // Remove any other open inputs
       document.querySelectorAll('.result-input').forEach(el=>el.remove());
       const wrap=document.createElement('div');
       wrap.className='result-input';
@@ -1365,21 +1375,43 @@ const ALLRACES=[];
         const place=sel.value,time=inp.value;
         if(place==='--'&&!time)return;
         const label=(place!=='--'?place:'')+(time?' '+time:'');
-        const r=JSON.parse(localStorage.getItem('mudbc-results')||'{}');
-        r[key]=label.trim();
-        localStorage.setItem('mudbc-results',JSON.stringify(r));
+        // Save to Firestore
+        const docId=key.replace(/[/#]/g,'_');
+        resultsRef.doc(docId).set({
+          race:key,
+          result:label.trim(),
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+        },{merge:true}).then(()=>{
+          showToast('Result saved & synced!');
+        }).catch(()=>{
+          showToast('Save failed - check connection');
+        });
         wrap.remove();
-        // Show saved
-        const exist=row.querySelector('.result-saved');if(exist)exist.remove();
-        const div=document.createElement('div');div.className='result-saved';
-        div.textContent='\u2705 '+r[key];
-        row.querySelector('.rr-cat').appendChild(div);
-        showToast('Result saved!');
       });
       wrap.appendChild(sel);wrap.appendChild(inp);wrap.appendChild(btn);
       row.appendChild(wrap);
       sel.focus();
     });
+  });
+
+  // Real-time listener - updates all devices instantly
+  resultsRef.onSnapshot(snapshot=>{
+    // Clear all existing result badges
+    document.querySelectorAll('.result-saved').forEach(el=>el.remove());
+    snapshot.forEach(doc=>{
+      const data=doc.data();
+      const row=rowMap[data.race];
+      if(!row||!data.result)return;
+      const catEl=row.querySelector('.rr-cat');
+      if(!catEl)return;
+      const div=document.createElement('div');
+      div.className='result-saved';
+      div.textContent='\u2705 '+data.result;
+      catEl.appendChild(div);
+    });
+  },err=>{
+    // Fallback to localStorage if Firestore fails
+    console.warn('Firestore offline, using local cache');
   });
 })();
 
