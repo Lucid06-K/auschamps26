@@ -156,7 +156,7 @@ body{
 .hero-race-btn svg{width:20px;height:20px}
 
 /* Quick actions */
-.quick-actions{display:flex;gap:10px;margin-bottom:32px}
+.quick-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:32px}
 .qa-btn{
   flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
   background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
@@ -527,8 +527,12 @@ body{
         Share
       </button>
       <button class="qa-btn" id="calBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-        Add to Cal
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        .ics File
+      </button>
+      <button class="qa-btn" id="gcalBtn" style="color:var(--blue)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>
+        Google Cal
       </button>
     </div>
 
@@ -1202,6 +1206,49 @@ document.getElementById('calBtn').addEventListener('click',()=>{
   a.click();URL.revokeObjectURL(a.href);
   showToast('Calendar file downloaded!');
 });
+
+// Google Calendar - opens each race as a new event in browser
+document.getElementById('gcalBtn').addEventListener('click',()=>{
+  // Build a single Google Calendar URL for the first race of each category to avoid opening 40 tabs
+  // Instead, open a picker
+  const races=ALLRACES.filter(r=>r.title.startsWith('Race'));
+  const nonRaces=ALLRACES.filter(r=>!r.title.startsWith('Race'));
+  const all=[...nonRaces,...races];
+  // Create a selection modal
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:flex-end;justify-content:center;animation:toastIn .2s ease';
+  const sheet=document.createElement('div');
+  sheet.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:16px 16px 0 0;width:100%;max-width:480px;max-height:70vh;overflow-y:auto;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))';
+  sheet.innerHTML='<div style="font-size:1rem;font-weight:800;margin-bottom:4px">Add to Google Calendar</div><div style="font-size:.78rem;color:var(--text2);margin-bottom:16px">Tap an event to add it</div>';
+  const addAllBtn=document.createElement('button');
+  addAllBtn.style.cssText='width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;margin-bottom:12px;font-family:inherit';
+  addAllBtn.textContent='Add all races (opens multiple tabs)';
+  addAllBtn.addEventListener('click',()=>{
+    races.forEach(r=>{window.open(gcalUrl(r),'_blank');});
+    overlay.remove();showToast('Opening Google Calendar...');
+  });
+  sheet.appendChild(addAllBtn);
+  all.forEach(r=>{
+    const row=document.createElement('div');
+    row.style.cssText='padding:12px;margin-bottom:4px;background:var(--bg3);border-radius:8px;cursor:pointer;transition:opacity .15s';
+    row.innerHTML='<div style="font-size:.78rem;font-weight:700">'+r.title+'</div><div style="font-size:.68rem;color:var(--text2)">'+r.d+' '+r.t+' - '+r.loc+'</div>';
+    row.addEventListener('click',()=>{window.open(gcalUrl(r),'_blank');showToast('Opening Google Calendar...');});
+    sheet.appendChild(row);
+  });
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  overlay.appendChild(sheet);document.body.appendChild(overlay);
+});
+
+function gcalUrl(ev){
+  const s=ev.d.replace(/-/g,'')+'T'+ev.t.replace(':','')+'00';
+  const e=ev.d.replace(/-/g,'')+'T'+ev.end.replace(':','')+'00';
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE'+
+    '&text='+encodeURIComponent(ev.title)+
+    '&dates='+s+'/'+e+
+    '&ctz=Australia/Brisbane'+
+    '&location='+encodeURIComponent(ev.loc)+
+    '&details='+encodeURIComponent('MUDBC AusChamps 2026');
+};
 
 // Expose EVENTS for calendar export
 const ALLRACES=[];
