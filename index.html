@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:;">
 <title>MUDBC AusChamps 2026 | Lake Kawana</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
@@ -1469,7 +1470,13 @@ function updateCountdown() {
     // Check if event is currently happening
     const endDate = new Date('2026-04-20T20:00:00+10:00');
     if (now <= endDate) {
-      document.querySelector('.hero-badge').innerHTML = '<span class="pulse" style="background:var(--emerald)"></span> HAPPENING NOW';
+      const badge = document.querySelector('.hero-badge');
+      badge.textContent = '';
+      const pulse = document.createElement('span');
+      pulse.className = 'pulse';
+      pulse.style.background = 'var(--emerald)';
+      badge.appendChild(pulse);
+      badge.appendChild(document.createTextNode(' HAPPENING NOW'));
     }
     return;
   }
