@@ -1428,7 +1428,20 @@ const ALLRACES=[];
         });
         wrap.remove();
       });
-      wrap.appendChild(sel);wrap.appendChild(btn);
+      const clrBtn=document.createElement('button');
+      clrBtn.textContent='Clear';
+      clrBtn.style.cssText='background:var(--red-soft);color:var(--red);border:1px solid var(--red-border)';
+      clrBtn.addEventListener('click',e=>{
+        e.stopPropagation();
+        const docId=key.replace(/[/#]/g,'_');
+        resultsRef.doc(docId).delete().then(()=>{
+          showToast('Result removed');
+        }).catch(()=>{
+          showToast('Delete failed - check connection');
+        });
+        wrap.remove();
+      });
+      wrap.appendChild(sel);wrap.appendChild(btn);wrap.appendChild(clrBtn);
       row.appendChild(wrap);
       sel.focus();
     });
