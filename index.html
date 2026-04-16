@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://api.open-meteo.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://api.open-meteo.com;">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0f1a">
@@ -418,6 +418,52 @@ body{
   .ev-card:active{border-color:var(--border)}
 }
 
+/* Share toast */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text);padding:10px 20px;border-radius:100px;
+  font-size:.8rem;font-weight:600;z-index:300;
+  animation:toastIn .3s ease,toastOut .3s ease 2s forwards;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+
+/* Race countdown badge */
+.race-cd{
+  display:inline-block;font-size:.65rem;font-weight:700;
+  color:var(--gold);margin-left:6px;
+}
+
+/* Results */
+.result-input{
+  display:flex;gap:6px;margin-top:8px;align-items:center;
+}
+.result-input select,.result-input input{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--r3);
+  color:var(--text);padding:6px 10px;font-size:.75rem;font-family:inherit;
+  -webkit-appearance:none;
+}
+.result-input select{min-width:60px}
+.result-input input{width:70px}
+.result-input button{
+  background:var(--blue);border:none;color:#fff;padding:6px 12px;
+  border-radius:var(--r3);font-size:.72rem;font-weight:600;cursor:pointer;
+  font-family:inherit;white-space:nowrap;
+}
+.result-saved{
+  font-size:.72rem;color:var(--green);font-weight:600;margin-top:6px;
+  display:flex;align-items:center;gap:4px;
+}
+
+/* Maps link */
+.maps-link{
+  display:inline-flex;align-items:center;gap:4px;
+  color:var(--blue);font-size:.75rem;font-weight:500;
+  text-decoration:none;margin-top:4px;
+}
+.maps-link:active{opacity:.7}
+
 /* ---- Confetti ---- */
 .confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:9999}
 .confetti-p{
@@ -476,9 +522,13 @@ body{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
         Pack List
       </button>
-      <button class="qa-btn" data-goto="contacts">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3"/></svg>
-        Contacts
+      <button class="qa-btn" id="shareBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+      <button class="qa-btn" id="calBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Add to Cal
       </button>
     </div>
 
@@ -495,7 +545,8 @@ body{
         <div class="info-icon accom">&#x1F3E8;</div>
         <div class="info-body">
           <h3>Pelican Waters Golf Resort</h3>
-          <p>38 Mahogany Drive, Caloundra 4551. 26 members across 7 rooms.</p>
+          <p>26 members across 7 rooms.</p>
+          <a href="https://maps.google.com/?q=38+Mahogany+Drive+Caloundra+4551+Australia" target="_blank" rel="noopener" class="maps-link">&#x1F4CD; 38 Mahogany Drive, Caloundra &rarr;</a>
         </div>
       </div>
     </div>
@@ -567,7 +618,7 @@ body{
       <div class="ev-top"><div class="ev-time">TBC</div><div class="ev-info"><div class="ev-title">Prize Presentation</div><div class="ev-loc">&#x1F3C5; Lake Kawana</div><span class="ev-tag ceremony">Ceremony</span></div></div>
     </div>
     <div class="ev-card">
-      <div class="ev-top"><div class="ev-time">7:30 PM</div><div class="ev-info"><div class="ev-title">Dinner with UQDBC &amp; USYD</div><div class="ev-loc">&#x1F4CD; The Savvy Squire, 123 Parkyn Pde, Mooloolaba</div><span class="ev-tag social">Social</span></div></div>
+      <div class="ev-top"><div class="ev-time">7:30 PM</div><div class="ev-info"><div class="ev-title">Dinner with UQDBC &amp; USYD</div><div class="ev-loc"><a href="https://maps.google.com/?q=The+Savvy+Squire+123+Parkyn+Parade+Mooloolaba+QLD+4557" target="_blank" rel="noopener" class="maps-link">&#x1F4CD; The Savvy Squire, 123 Parkyn Pde, Mooloolaba &rarr;</a></div><span class="ev-tag social">Social</span></div></div>
     </div>
   </div>
 
@@ -675,7 +726,7 @@ body{
     <div class="resort-banner">
       <h3>Pelican Waters Golf Resort</h3>
       <p>26 members across 7 rooms. Short drive to Lake Kawana racecourse.</p>
-      <div class="addr">&#x1F4CD; 38 Mahogany Drive, 4551 Caloundra</div>
+      <a href="https://maps.google.com/?q=38+Mahogany+Drive+Caloundra+4551+Australia" target="_blank" rel="noopener" class="maps-link">&#x1F4CD; 38 Mahogany Drive, 4551 Caloundra &rarr; Open Maps</a>
     </div>
 
     <div class="room-card2">
@@ -1110,6 +1161,201 @@ function confetti(){
     document.getElementById('wx-title').textContent='16 \u2013 28\u00B0C';
     document.getElementById('wx-desc').textContent='Possible showers \u00B7 Sunshine Coast (offline)';
   }
+})();
+
+// Share button
+document.getElementById('shareBtn').addEventListener('click',async()=>{
+  const url=location.href,text='MUDBC AusChamps 2026 - Race schedule, rooms, packing & contacts';
+  if(navigator.share){
+    try{await navigator.share({title:'MUDBC AusChamps 2026',text,url});}catch(e){}
+  }else{
+    try{await navigator.clipboard.writeText(url);showToast('Link copied!');}
+    catch(e){showToast('Could not copy link');}
+  }
+});
+function showToast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+// Calendar export (.ics)
+document.getElementById('calBtn').addEventListener('click',()=>{
+  const races=ALLRACES;
+  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MUDBC//AusChamps2026//EN\r\nCALSCALE:GREGORIAN\r\n';
+  races.forEach(r=>{
+    const s=r.d.replace(/-/g,'')+'T'+r.t.replace(':','')+'00';
+    const e=r.d.replace(/-/g,'')+'T'+r.end.replace(':','')+'00';
+    ics+='BEGIN:VEVENT\r\n';
+    ics+='DTSTART;TZID=Australia/Brisbane:'+s+'\r\n';
+    ics+='DTEND;TZID=Australia/Brisbane:'+e+'\r\n';
+    ics+='SUMMARY:'+r.title+'\r\n';
+    ics+='LOCATION:'+r.loc+'\r\n';
+    ics+='DESCRIPTION:MUDBC AusChamps 2026\r\n';
+    ics+='BEGIN:VALARM\r\nTRIGGER:-PT15M\r\nACTION:DISPLAY\r\nDESCRIPTION:Race in 15 minutes!\r\nEND:VALARM\r\n';
+    ics+='END:VEVENT\r\n';
+  });
+  ics+='END:VCALENDAR';
+  const blob=new Blob([ics],{type:'text/calendar'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='mudbc-auschamps-2026.ics';
+  a.click();URL.revokeObjectURL(a.href);
+  showToast('Calendar file downloaded!');
+});
+
+// Expose EVENTS for calendar export
+const ALLRACES=[];
+(function(){
+  const evs=[
+    {d:'2026-04-17',t:'15:00',end:'15:15',title:'Arrive Sunshine Coast Airport',loc:'MCY Airport'},
+    {d:'2026-04-17',t:'19:00',end:'21:00',title:'Team Dinner',loc:'TBC'},
+    {d:'2026-04-18',t:'07:00',end:'07:45',title:'AusChamps Opening Ceremony',loc:'Lake Kawana'},
+    {d:'2026-04-18',t:'09:42',end:'09:50',title:'Race #18 - Open 10s 200m Heat',loc:'Lake Kawana'},
+    {d:'2026-04-18',t:'10:24',end:'10:32',title:'Race #25/26 - Open 10s 200m Rep',loc:'Lake Kawana'},
+    {d:'2026-04-18',t:'11:06',end:'11:14',title:'Race #32/33 - Open 10s 200m SF',loc:'Lake Kawana'},
+    {d:'2026-04-18',t:'11:42',end:'11:50',title:'Race #38 - Open 10s 200m GF',loc:'Lake Kawana'},
+    {d:'2026-04-18',t:'12:36',end:'12:44',title:'Race #45 - Mixed 10s 200m Heat',loc:'Lake Kawana'},
+    {d:'2026-04-18',t:'13:06',end:'13:14',title:'Race #50/51 - Mixed 10s 200m Rep',loc:'Lake Kawana'},
+    {d:'2026-04-18',t:'13:48',end:'13:56',title:'Race #57/58 - Mixed 10s 200m SF',loc:'Lake Kawana'},
+    {d:'2026-04-18',t:'14:18',end:'14:26',title:'Race #62 - Mixed 10s 200m GF',loc:'Lake Kawana'},
+    {d:'2026-04-18',t:'14:30',end:'14:38',title:'Race #63 - Uni vs Uni 200m GF',loc:'Lake Kawana'},
+    {d:'2026-04-18',t:'16:30',end:'16:50',title:'Race #73 - Open 10s 1km Turn',loc:'Lake Kawana'},
+    {d:'2026-04-18',t:'19:30',end:'23:00',title:'Dinner with UQDBC & USYD',loc:'The Savvy Squire Mooloolaba'},
+    {d:'2026-04-19',t:'06:45',end:'07:15',title:'Team Manager Briefing',loc:'Lake Kawana'},
+    {d:'2026-04-19',t:'08:12',end:'08:20',title:'Race #7 - Mixed 10s 500m Heat',loc:'Lake Kawana'},
+    {d:'2026-04-19',t:'08:40',end:'08:48',title:'Race #11/12 - Mixed 10s 500m Rep',loc:'Lake Kawana'},
+    {d:'2026-04-19',t:'09:22',end:'09:30',title:'Race #17/18 - Mixed 10s 500m SF',loc:'Lake Kawana'},
+    {d:'2026-04-19',t:'09:50',end:'09:58',title:'Race #21 - Mixed 10s 500m GF',loc:'Lake Kawana'},
+    {d:'2026-04-19',t:'11:49',end:'11:57',title:'Race #37 - Open 10s 500m Heat',loc:'Lake Kawana'},
+    {d:'2026-04-19',t:'12:59',end:'13:07',title:'Race #47/48 - Open 10s 500m Rep',loc:'Lake Kawana'},
+    {d:'2026-04-19',t:'13:48',end:'13:56',title:'Race #54-56 - Open 10s 500m SF',loc:'Lake Kawana'},
+    {d:'2026-04-19',t:'14:37',end:'14:45',title:'Race #61 - Open 10s 500m GF',loc:'Lake Kawana'},
+    {d:'2026-04-19',t:'14:44',end:'14:52',title:'Race #62 - Uni vs Uni 500m GF',loc:'Lake Kawana'},
+    {d:'2026-04-19',t:'16:05',end:'16:30',title:'Race #65/66 - Mixed 10s 2km Turn',loc:'Lake Kawana'},
+    {d:'2026-04-20',t:'07:00',end:'07:30',title:'State Flag Bearer Ceremony',loc:'Lake Kawana'},
+    {d:'2026-04-20',t:'08:08',end:'08:16',title:'Race #2 - Junior Mixed R1',loc:'Lake Kawana'},
+    {d:'2026-04-20',t:'08:24',end:'08:32',title:'Race #4 - 24U Mixed R1',loc:'Lake Kawana'},
+    {d:'2026-04-20',t:'08:48',end:'08:56',title:'Race #7 - Prem Mixed R1',loc:'Lake Kawana'},
+    {d:'2026-04-20',t:'09:12',end:'09:20',title:'Race #10 - Junior Mixed R2',loc:'Lake Kawana'},
+    {d:'2026-04-20',t:'09:28',end:'09:36',title:'Race #12 - 24U Mixed R2',loc:'Lake Kawana'},
+    {d:'2026-04-20',t:'09:52',end:'10:00',title:'Race #15 - Prem Mixed R2',loc:'Lake Kawana'},
+    {d:'2026-04-20',t:'15:20',end:'15:35',title:'Race #54 - 24U Mixed 1km Turn',loc:'Lake Kawana'},
+    {d:'2026-04-20',t:'15:50',end:'16:05',title:'Race #57 - Prem Women 1km Turn',loc:'Lake Kawana'},
+    {d:'2026-04-20',t:'16:00',end:'16:15',title:'Race #58 - Prem Open 1km Turn',loc:'Lake Kawana'},
+    {d:'2026-04-20',t:'20:00',end:'20:30',title:'Depart to Melbourne',loc:'MCY Airport - JQ799'},
+  ];
+  evs.forEach(e=>ALLRACES.push(e));
+})();
+
+// Race countdown on schedule race rows
+(function updateRaceCountdowns(){
+  const now=new Date();
+  document.querySelectorAll('.race-row').forEach(row=>{
+    const timeEl=row.querySelector('.rr-time');
+    if(!timeEl)return;
+    // Remove old countdown
+    const old=row.querySelector('.race-cd');if(old)old.remove();
+    // Parse time from row
+    const txt=timeEl.textContent.trim();
+    const m=txt.match(/^(\d+):(\d+)(am|pm)$/);
+    if(!m)return;
+    let h=parseInt(m[1]),min=parseInt(m[2]);
+    if(m[3]==='pm'&&h!==12)h+=12;
+    if(m[3]==='am'&&h===12)h=0;
+    // Figure out which day this row belongs to
+    const panel=row.closest('.day-content');
+    if(!panel)return;
+    const dayMap={d1:'2026-04-17',d2:'2026-04-18',d3:'2026-04-19',d4:'2026-04-20'};
+    const ds=dayMap[panel.id];
+    if(!ds)return;
+    const raceTime=new Date(ds+'T'+String(h).padStart(2,'0')+':'+String(min).padStart(2,'0')+':00+10:00');
+    const diff=raceTime-now;
+    if(diff>0&&diff<3*3600000){
+      const badge=document.createElement('span');
+      badge.className='race-cd';
+      const mins=Math.round(diff/60000);
+      if(mins<60)badge.textContent='in '+mins+'m';
+      else{const hh=Math.floor(mins/60),mm=mins%60;badge.textContent=mm?'in '+hh+'h'+mm+'m':'in '+hh+'h';}
+      timeEl.appendChild(badge);
+    }else if(diff<=0&&diff>-480000){
+      const badge=document.createElement('span');
+      badge.className='race-cd';badge.style.color='var(--green)';
+      badge.textContent='NOW';
+      timeEl.appendChild(badge);
+    }
+  });
+  setTimeout(updateRaceCountdowns,60000);
+})();
+
+// Results tracker - add result inputs to race rows
+(function(){
+  const results=JSON.parse(localStorage.getItem('mudbc-results')||'{}');
+  document.querySelectorAll('.race-row').forEach(row=>{
+    const numEl=row.querySelector('.rr-num');
+    if(!numEl)return;
+    const key=numEl.textContent.trim();
+    const saved=results[key];
+    if(saved){
+      const div=document.createElement('div');
+      div.className='result-saved';
+      div.textContent='\u2705 '+saved;
+      row.querySelector('.rr-cat').appendChild(div);
+    }
+    // Tap race row to log result
+    row.style.cursor='pointer';
+    row.addEventListener('click',()=>{
+      if(row.querySelector('.result-input'))return;
+      // Remove any other open inputs
+      document.querySelectorAll('.result-input').forEach(el=>el.remove());
+      const wrap=document.createElement('div');
+      wrap.className='result-input';
+      wrap.style.gridColumn='1/-1';
+      const sel=document.createElement('select');
+      ['--','1st','2nd','3rd','4th','5th','6th','7th','8th','DNS','DNF'].forEach(v=>{
+        const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);
+      });
+      const inp=document.createElement('input');
+      inp.type='text';inp.placeholder='Time';inp.setAttribute('inputmode','decimal');
+      const btn=document.createElement('button');
+      btn.textContent='Save';
+      btn.addEventListener('click',e=>{
+        e.stopPropagation();
+        const place=sel.value,time=inp.value;
+        if(place==='--'&&!time)return;
+        const label=(place!=='--'?place:'')+(time?' '+time:'');
+        const r=JSON.parse(localStorage.getItem('mudbc-results')||'{}');
+        r[key]=label.trim();
+        localStorage.setItem('mudbc-results',JSON.stringify(r));
+        wrap.remove();
+        // Show saved
+        const exist=row.querySelector('.result-saved');if(exist)exist.remove();
+        const div=document.createElement('div');div.className='result-saved';
+        div.textContent='\u2705 '+r[key];
+        row.querySelector('.rr-cat').appendChild(div);
+        showToast('Result saved!');
+      });
+      wrap.appendChild(sel);wrap.appendChild(inp);wrap.appendChild(btn);
+      row.appendChild(wrap);
+      sel.focus();
+    });
+  });
+})();
+
+// PWA - register service worker and manifest
+if('serviceWorker' in navigator){
+  const swCode='self.addEventListener("install",e=>self.skipWaiting());self.addEventListener("activate",e=>self.clients.claim());self.addEventListener("fetch",e=>e.respondWith(fetch(e.request).catch(()=>caches.match(e.request))));';
+  const swBlob=new Blob([swCode],{type:'application/javascript'});
+  const swUrl=URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+// Inject manifest
+(function(){
+  const manifest={name:'MUDBC AusChamps 2026',short_name:'AusChamps',start_url:location.href,display:'standalone',background_color:'#0a0f1a',theme_color:'#0a0f1a',
+    icons:[{src:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>',sizes:'any',type:'image/svg+xml'}]};
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  const link=document.createElement('link');
+  link.rel='manifest';link.href=URL.createObjectURL(blob);
+  document.head.appendChild(link);
 })();
 </script>
 </body>
