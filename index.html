@@ -156,7 +156,7 @@ body{
 .hero-race-btn svg{width:20px;height:20px}
 
 /* Quick actions */
-.quick-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:32px}
+.quick-actions{display:flex;gap:10px;margin-bottom:32px}
 .qa-btn{
   flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
   background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
@@ -528,11 +528,7 @@ body{
       </button>
       <button class="qa-btn" id="calBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        .ics File
-      </button>
-      <button class="qa-btn" id="gcalBtn" style="color:var(--blue)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>
-        Google Cal
+        Add to Cal
       </button>
     </div>
 
@@ -1182,59 +1178,58 @@ function showToast(msg){
   document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
 }
 
-// Calendar export (.ics)
+// Calendar export - unified popup
 document.getElementById('calBtn').addEventListener('click',()=>{
-  const races=ALLRACES;
-  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MUDBC//AusChamps2026//EN\r\nCALSCALE:GREGORIAN\r\n';
-  races.forEach(r=>{
-    const s=r.d.replace(/-/g,'')+'T'+r.t.replace(':','')+'00';
-    const e=r.d.replace(/-/g,'')+'T'+r.end.replace(':','')+'00';
-    ics+='BEGIN:VEVENT\r\n';
-    ics+='DTSTART;TZID=Australia/Brisbane:'+s+'\r\n';
-    ics+='DTEND;TZID=Australia/Brisbane:'+e+'\r\n';
-    ics+='SUMMARY:'+r.title+'\r\n';
-    ics+='LOCATION:'+r.loc+'\r\n';
-    ics+='DESCRIPTION:MUDBC AusChamps 2026\r\n';
-    ics+='BEGIN:VALARM\r\nTRIGGER:-PT15M\r\nACTION:DISPLAY\r\nDESCRIPTION:Race in 15 minutes!\r\nEND:VALARM\r\n';
-    ics+='END:VEVENT\r\n';
-  });
-  ics+='END:VCALENDAR';
-  const blob=new Blob([ics],{type:'text/calendar'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='mudbc-auschamps-2026.ics';
-  a.click();URL.revokeObjectURL(a.href);
-  showToast('Calendar file downloaded!');
-});
-
-// Google Calendar - opens each race as a new event in browser
-document.getElementById('gcalBtn').addEventListener('click',()=>{
-  // Build a single Google Calendar URL for the first race of each category to avoid opening 40 tabs
-  // Instead, open a picker
-  const races=ALLRACES.filter(r=>r.title.startsWith('Race'));
-  const nonRaces=ALLRACES.filter(r=>!r.title.startsWith('Race'));
-  const all=[...nonRaces,...races];
-  // Create a selection modal
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:flex-end;justify-content:center;animation:toastIn .2s ease';
   const sheet=document.createElement('div');
-  sheet.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:16px 16px 0 0;width:100%;max-width:480px;max-height:70vh;overflow-y:auto;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))';
-  sheet.innerHTML='<div style="font-size:1rem;font-weight:800;margin-bottom:4px">Add to Google Calendar</div><div style="font-size:.78rem;color:var(--text2);margin-bottom:16px">Tap an event to add it</div>';
-  const addAllBtn=document.createElement('button');
-  addAllBtn.style.cssText='width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;margin-bottom:12px;font-family:inherit';
-  addAllBtn.textContent='Add all races (opens multiple tabs)';
-  addAllBtn.addEventListener('click',()=>{
-    races.forEach(r=>{window.open(gcalUrl(r),'_blank');});
+  sheet.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:16px 16px 0 0;width:100%;max-width:480px;max-height:75vh;overflow-y:auto;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))';
+  sheet.innerHTML='<div style="font-size:1rem;font-weight:800;margin-bottom:4px">Add to Calendar</div><div style="font-size:.78rem;color:var(--text2);margin-bottom:16px">Choose how to add events</div>';
+
+  // .ics download button
+  const icsBtn=document.createElement('button');
+  icsBtn.style.cssText='width:100%;padding:14px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer;margin-bottom:8px;font-family:inherit;text-align:left;display:flex;align-items:center;gap:12px';
+  icsBtn.innerHTML='<span style="font-size:1.3rem">📅</span><span>Download .ics file<br><span style="font-size:.72rem;font-weight:500;color:var(--text2)">Apple Calendar, Outlook, any calendar app</span></span>';
+  icsBtn.addEventListener('click',()=>{
+    let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MUDBC//AusChamps2026//EN\r\nCALSCALE:GREGORIAN\r\n';
+    ALLRACES.forEach(r=>{
+      const s=r.d.replace(/-/g,'')+'T'+r.t.replace(':','')+'00';
+      const e=r.d.replace(/-/g,'')+'T'+r.end.replace(':','')+'00';
+      ics+='BEGIN:VEVENT\r\nDTSTART;TZID=Australia/Brisbane:'+s+'\r\nDTEND;TZID=Australia/Brisbane:'+e+'\r\nSUMMARY:'+r.title+'\r\nLOCATION:'+r.loc+'\r\nDESCRIPTION:MUDBC AusChamps 2026\r\nBEGIN:VALARM\r\nTRIGGER:-PT15M\r\nACTION:DISPLAY\r\nDESCRIPTION:Race in 15 minutes!\r\nEND:VALARM\r\nEND:VEVENT\r\n';
+    });
+    ics+='END:VCALENDAR';
+    const blob=new Blob([ics],{type:'text/calendar'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mudbc-auschamps-2026.ics';a.click();URL.revokeObjectURL(a.href);
+    overlay.remove();showToast('Calendar file downloaded!');
+  });
+  sheet.appendChild(icsBtn);
+
+  // Google Calendar - all races button
+  const gcalAllBtn=document.createElement('button');
+  gcalAllBtn.style.cssText='width:100%;padding:14px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer;margin-bottom:16px;font-family:inherit;text-align:left;display:flex;align-items:center;gap:12px';
+  gcalAllBtn.innerHTML='<span style="font-size:1.3rem">🗓️</span><span>Add all to Google Calendar<br><span style="font-size:.72rem;font-weight:500;color:var(--text2)">Opens each event in Google Calendar</span></span>';
+  gcalAllBtn.addEventListener('click',()=>{
+    ALLRACES.forEach(r=>{window.open(gcalUrl(r),'_blank');});
     overlay.remove();showToast('Opening Google Calendar...');
   });
-  sheet.appendChild(addAllBtn);
-  all.forEach(r=>{
+  sheet.appendChild(gcalAllBtn);
+
+  // Individual events
+  const divider=document.createElement('div');
+  divider.style.cssText='font-size:.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px';
+  divider.textContent='Or add individual events to Google Calendar';
+  sheet.appendChild(divider);
+
+  const races=ALLRACES.filter(r=>r.title.startsWith('Race'));
+  const nonRaces=ALLRACES.filter(r=>!r.title.startsWith('Race'));
+  [...nonRaces,...races].forEach(r=>{
     const row=document.createElement('div');
     row.style.cssText='padding:12px;margin-bottom:4px;background:var(--bg3);border-radius:8px;cursor:pointer;transition:opacity .15s';
-    row.innerHTML='<div style="font-size:.78rem;font-weight:700">'+r.title+'</div><div style="font-size:.68rem;color:var(--text2)">'+r.d+' '+r.t+' - '+r.loc+'</div>';
+    row.innerHTML='<div style="font-size:.78rem;font-weight:700">'+r.title+'</div><div style="font-size:.68rem;color:var(--text2)">'+r.d+' '+r.t+' \u00B7 '+r.loc+'</div>';
     row.addEventListener('click',()=>{window.open(gcalUrl(r),'_blank');showToast('Opening Google Calendar...');});
     sheet.appendChild(row);
   });
+
   overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
   overlay.appendChild(sheet);document.body.appendChild(overlay);
 });
