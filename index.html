@@ -197,14 +197,22 @@ body{
 
 /* Expandable */
 .expand-btn{
-  display:flex;align-items:center;gap:6px;
-  background:none;border:none;color:var(--blue);
-  font-size:.78rem;font-weight:600;cursor:pointer;
-  padding:8px 0 0;font-family:inherit;
-  -webkit-tap-highlight-color:transparent;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;margin-top:10px;padding:11px 16px;
+  background:var(--blue-soft);border:1px solid var(--blue-border);
+  border-radius:var(--r3);color:var(--blue);
+  font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;
+  transition:all .15s;-webkit-tap-highlight-color:transparent;
 }
+.expand-btn:active{background:rgba(59,130,246,.18);transform:scale(.98)}
 .expand-btn svg{width:16px;height:16px;transition:transform .2s}
 .expand-btn.open svg{transform:rotate(180deg)}
+.race-header{
+  display:grid;grid-template-columns:46px 58px 36px 1fr;gap:8px;
+  padding:8px 0;font-size:.65rem;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.08em;
+  border-bottom:1px solid var(--border);
+}
 .expand-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
 .expand-body.open{max-height:3000px}
 
@@ -485,6 +493,7 @@ body{
           <button class="expand-btn" data-target="races-d2">View 10 races <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
           <div class="expand-body" id="races-d2">
             <div class="race-list">
+              <div class="race-header"><div>Race</div><div>Time</div><div>Lane</div><div>Category</div></div>
               <div class="race-row"><div class="rr-num">#18</div><div class="rr-time">9:42am</div><div class="rr-lane">3</div><div class="rr-cat"><span class="race-badge2 rb-heat">Heat</span> Open 10's 200m</div></div>
               <div class="race-row"><div class="rr-num">#25/26</div><div class="rr-time">10:24am</div><div class="rr-lane">-</div><div class="rr-cat"><span class="race-badge2 rb-rep">Rep</span> Open 10's 200m</div></div>
               <div class="race-row"><div class="rr-num">#32/33</div><div class="rr-time">11:06am</div><div class="rr-lane">-</div><div class="rr-cat"><span class="race-badge2 rb-sf">SF</span> Open 10's 200m</div></div>
@@ -526,6 +535,7 @@ body{
           <button class="expand-btn" data-target="races-d3">View 10 races <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
           <div class="expand-body" id="races-d3">
             <div class="race-list">
+              <div class="race-header"><div>Race</div><div>Time</div><div>Lane</div><div>Category</div></div>
               <div class="race-row"><div class="rr-num">#7</div><div class="rr-time">8:12am</div><div class="rr-lane">1</div><div class="rr-cat"><span class="race-badge2 rb-heat">Heat</span> Mixed 10's 500m</div></div>
               <div class="race-row"><div class="rr-num">#11/12</div><div class="rr-time">8:40am</div><div class="rr-lane">-</div><div class="rr-cat"><span class="race-badge2 rb-rep">Rep</span> Mixed 10's 500m</div></div>
               <div class="race-row"><div class="rr-num">#17/18</div><div class="rr-time">9:22am</div><div class="rr-lane">-</div><div class="rr-cat"><span class="race-badge2 rb-sf">SF</span> Mixed 10's 500m</div></div>
@@ -567,6 +577,7 @@ body{
           <button class="expand-btn" data-target="races-d4">View 22 races <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
           <div class="expand-body" id="races-d4">
             <div class="race-list">
+              <div class="race-header"><div>Race</div><div>Time</div><div>Lane</div><div>Category</div></div>
               <div class="race-row"><div class="rr-num">#2</div><div class="rr-time">8:08am</div><div class="rr-lane">2</div><div class="rr-cat"><span class="race-badge2 rb-round">R1</span> Junior Mixed</div></div>
               <div class="race-row"><div class="rr-num">#4</div><div class="rr-time">8:24am</div><div class="rr-lane">2</div><div class="rr-cat"><span class="race-badge2 rb-round">R1</span> 24U Mixed</div></div>
               <div class="race-row"><div class="rr-num">#7</div><div class="rr-time">8:48am</div><div class="rr-lane">4/6</div><div class="rr-cat"><span class="race-badge2 rb-round">R1</span> Prem Mixed</div></div>
