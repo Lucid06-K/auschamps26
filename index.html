@@ -593,7 +593,7 @@
   .day-panel { display: none; }
   .day-panel.active { display: block; animation: fadeUp 0.4s ease; }
 
-  /* Responsive */
+  /* Responsive - Tablet */
   @media (max-width: 768px) {
     .nav-links { display: none; }
     .nav-links.open {
@@ -604,12 +604,110 @@
       padding: 16px; gap: 4px;
       border-bottom: 1px solid var(--glass-border);
     }
+    .nav-links.open a {
+      padding: 14px 16px; font-size: 1rem;
+    }
     .hamburger { display: block; }
     .countdown-item { min-width: 70px; padding: 14px 16px; }
     .countdown-num { font-size: 1.8rem; }
     .resort-card { flex-direction: column; }
     .packing-grid { grid-template-columns: 1fr; }
-    .day-tab { padding: 10px 16px; font-size: 0.8rem; }
+    .accom-grid { grid-template-columns: 1fr; }
+    .contacts-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Responsive - Mobile */
+  @media (max-width: 480px) {
+    /* Global spacing */
+    section { padding: 48px 16px; }
+    .section-header { margin-bottom: 32px; }
+    .container { padding: 0; }
+
+    /* Hero */
+    .hero { padding: 100px 16px 48px; min-height: auto; }
+    .hero-badge { font-size: 0.75rem; padding: 6px 14px; }
+    .hero h1 { font-size: 2.2rem; margin-bottom: 12px; }
+    .hero-sub { font-size: 0.95rem; margin-bottom: 28px; }
+
+    /* Countdown - 2x2 grid on small phones */
+    .countdown { gap: 10px; margin-bottom: 28px; }
+    .countdown-item {
+      min-width: 0; padding: 12px 0; flex: 1 1 calc(50% - 10px);
+      max-width: calc(50% - 5px);
+    }
+    .countdown-num { font-size: 1.6rem; }
+    .countdown-label { font-size: 0.65rem; }
+
+    /* Hero buttons stack */
+    .hero-actions { flex-direction: column; align-items: stretch; }
+    .btn { justify-content: center; padding: 14px 20px; }
+
+    /* Day tabs - horizontal scroll */
+    .day-tabs {
+      justify-content: flex-start; flex-wrap: nowrap;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      padding-bottom: 8px; margin-bottom: 24px;
+      scrollbar-width: none; gap: 8px;
+    }
+    .day-tabs::-webkit-scrollbar { display: none; }
+    .day-tab {
+      flex-shrink: 0; padding: 10px 16px; font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    /* Timeline - tighter on mobile */
+    .timeline::before { left: 14px; }
+    .timeline-item { padding-left: 44px; margin-bottom: 16px; }
+    .timeline-item .dot { left: 7px; top: 16px; width: 16px; height: 16px; }
+    .timeline-card { padding: 14px 16px; border-radius: var(--radius-sm); }
+    .timeline-title { font-size: 0.9rem; }
+    .timeline-loc { font-size: 0.75rem; word-break: break-word; }
+
+    /* Race tables - horizontal scroll */
+    .race-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .race-table { min-width: 400px; font-size: 0.78rem; }
+    .race-table th { padding: 6px 8px; font-size: 0.68rem; }
+    .race-table td { padding: 8px; }
+    .race-toggle { padding: 8px 14px; font-size: 0.78rem; }
+
+    /* Accommodation */
+    .resort-card { padding: 20px; gap: 20px; }
+    .resort-info { min-width: 0; }
+    .resort-info h3 { font-size: 1.2rem; }
+    .resort-info p { font-size: 0.85rem; }
+    .resort-address { font-size: 0.8rem; word-break: break-word; }
+    .accom-grid { grid-template-columns: 1fr; gap: 12px; }
+    .room-card { padding: 18px; }
+    .room-num { font-size: 1.5rem; }
+    .occupant-chip { padding: 5px 10px; font-size: 0.78rem; }
+    .room-occupants { gap: 6px; }
+
+    /* Packing - bigger touch targets */
+    .packing-category { padding: 20px 16px; }
+    .packing-item { padding: 14px 0; gap: 14px; min-height: 48px; }
+    .packing-check { width: 28px; height: 28px; border-radius: 8px; }
+    .packing-item.checked .packing-check::after { font-size: 0.85rem; }
+    .packing-label { font-size: 0.88rem; }
+    .packing-note { margin-left: 42px; }
+    .pack-progress { padding: 20px 16px; }
+    .progress-text { font-size: 1.6rem; }
+
+    /* Contacts - single column */
+    .contacts-grid { grid-template-columns: 1fr; gap: 12px; }
+    .contact-card { padding: 20px; }
+    .contact-phone { padding: 12px 20px; font-size: 0.9rem; width: 100%; justify-content: center; }
+
+    /* Emergency */
+    .emergency-banner { padding: 20px; }
+    .emergency-num { font-size: 2rem; }
+
+    /* Weather inline */
+    .weather-card { padding: 20px; min-width: 0 !important; }
+    .weather-icon { font-size: 2.2rem; }
+    .weather-temp { font-size: 1.5rem; }
+
+    /* Footer */
+    footer { padding: 28px 16px; font-size: 0.75rem; }
   }
 
   /* Confetti for completed packing */
