@@ -90,6 +90,57 @@ body{
 .hero-venue strong{color:var(--text)}
 
 /* Countdown */
+/* Live tracker */
+.live-section{margin-top:28px;margin-bottom:16px}
+.live-label{
+  font-size:.65rem;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;
+  display:flex;align-items:center;gap:6px;
+}
+.live-label .live-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--green);
+  animation:blink 1.5s infinite;
+}
+.live-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px 16px;display:flex;align-items:flex-start;gap:12px;
+  margin-bottom:8px;transition:all .2s;
+}
+.live-card.race-card{
+  border-color:var(--blue-border);background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(59,130,246,.02));
+}
+.live-card.race-card .lc-indicator{background:var(--blue)}
+.lc-indicator{
+  width:4px;align-self:stretch;border-radius:4px;flex-shrink:0;
+  background:var(--border2);min-height:32px;
+}
+.live-card.now-card .lc-indicator{background:var(--green);box-shadow:0 0 8px rgba(34,197,94,.4)}
+.lc-body{flex:1;min-width:0}
+.lc-time{font-size:.72rem;font-weight:700;color:var(--text3)}
+.lc-time.now{color:var(--green)}
+.lc-title{font-size:.88rem;font-weight:700;margin-top:2px}
+.lc-loc{font-size:.72rem;color:var(--text2);margin-top:2px}
+.lc-race-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  margin-top:6px;padding:3px 10px;border-radius:100px;
+  font-size:.68rem;font-weight:700;
+  background:var(--blue-soft);color:var(--blue);
+}
+.lc-race-tag svg{width:12px;height:12px}
+.live-card.next-race{
+  border-color:var(--blue-border);
+  background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(59,130,246,.02));
+  animation:nextPulse 3s ease-in-out infinite;
+}
+@keyframes nextPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}
+  50%{box-shadow:0 0 0 4px rgba(59,130,246,.1)}
+}
+.live-none{
+  text-align:center;padding:16px;color:var(--text3);font-size:.82rem;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+}
+
 /* Hero race CTA */
 .hero-race-btn{
   display:flex;align-items:center;justify-content:center;gap:10px;
@@ -409,6 +460,8 @@ body{
       <h1 class="hero-title">AusChamps<span>2 0 2 6</span></h1>
       <p class="hero-venue"><strong>Lake Kawana</strong>, Sunshine Coast QLD<br>17 &ndash; 20 April 2026</p>
     </div>
+
+    <div id="live-tracker"></div>
 
     <button class="hero-race-btn" data-goto="schedule">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -828,6 +881,159 @@ function confetti(){
 
 // Live weather from Open-Meteo (free, no API key)
 // Lake Kawana, Sunshine Coast: -26.68, 153.12
+// Live event tracker
+(function(){
+  const EVENTS=[
+    // Day 1 - Fri 17 Apr
+    {d:'2026-04-17',t:'15:00',end:'15:15',title:'Arrive Sunshine Coast Airport',loc:'MCY Airport',type:'travel'},
+    {d:'2026-04-17',t:'15:15',end:'16:00',title:'Collect Rental Cars & Drive to Accom',loc:'Pelican Waters Golf Resort',type:'travel'},
+    {d:'2026-04-17',t:'19:00',end:'21:00',title:'Team Dinner',loc:'TBC',type:'social'},
+    // Day 2 - Sat 18 Apr
+    {d:'2026-04-18',t:'06:30',end:'06:50',title:'Depart from Accommodation',loc:'Pelican Waters Golf Resort',type:'travel'},
+    {d:'2026-04-18',t:'07:00',end:'07:45',title:'AusChamps Opening Ceremony',loc:'Lake Kawana',type:'ceremony'},
+    {d:'2026-04-18',t:'09:42',end:'09:50',title:'Race #18 - Open 10\'s 200m Heat',loc:'Lake Kawana, Lane 3',type:'race'},
+    {d:'2026-04-18',t:'10:24',end:'10:32',title:'Race #25/26 - Open 10\'s 200m Rep',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-18',t:'11:06',end:'11:14',title:'Race #32/33 - Open 10\'s 200m SF',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-18',t:'11:42',end:'11:50',title:'Race #38 - Open 10\'s 200m Grand Final',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-18',t:'12:36',end:'12:44',title:'Race #45 - Mixed 10\'s 200m Heat',loc:'Lake Kawana, Lane 5',type:'race'},
+    {d:'2026-04-18',t:'13:06',end:'13:14',title:'Race #50/51 - Mixed 10\'s 200m Rep',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-18',t:'13:48',end:'13:56',title:'Race #57/58 - Mixed 10\'s 200m SF',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-18',t:'14:18',end:'14:26',title:'Race #62 - Mixed 10\'s 200m Grand Final',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-18',t:'14:30',end:'14:38',title:'Race #63 - Uni vs Uni 200m GF',loc:'Lake Kawana, Lane 2',type:'race'},
+    {d:'2026-04-18',t:'16:30',end:'16:50',title:'Race #73 - Open 10\'s 1km Turn',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-18',t:'19:30',end:'23:00',title:'Dinner with UQDBC & USYD',loc:'The Savvy Squire, Mooloolaba',type:'social'},
+    // Day 3 - Sun 19 Apr
+    {d:'2026-04-19',t:'06:00',end:'06:30',title:'Depart from Accommodation',loc:'Pelican Waters Golf Resort',type:'travel'},
+    {d:'2026-04-19',t:'06:45',end:'07:15',title:'Team Manager Briefing',loc:'Lake Kawana',type:'ceremony'},
+    {d:'2026-04-19',t:'08:12',end:'08:20',title:'Race #7 - Mixed 10\'s 500m Heat',loc:'Lake Kawana, Lane 1',type:'race'},
+    {d:'2026-04-19',t:'08:40',end:'08:48',title:'Race #11/12 - Mixed 10\'s 500m Rep',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-19',t:'09:22',end:'09:30',title:'Race #17/18 - Mixed 10\'s 500m SF',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-19',t:'09:50',end:'09:58',title:'Race #21 - Mixed 10\'s 500m Grand Final',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-19',t:'11:49',end:'11:57',title:'Race #37 - Open 10\'s 500m Heat',loc:'Lake Kawana, Lane 4',type:'race'},
+    {d:'2026-04-19',t:'12:59',end:'13:07',title:'Race #47/48 - Open 10\'s 500m Rep',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-19',t:'13:48',end:'13:56',title:'Race #54-56 - Open 10\'s 500m SF',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-19',t:'14:37',end:'14:45',title:'Race #61 - Open 10\'s 500m Grand Final',loc:'Lake Kawana',type:'race'},
+    {d:'2026-04-19',t:'14:44',end:'14:52',title:'Race #62 - Uni vs Uni 500m GF',loc:'Lake Kawana, Lane 4',type:'race'},
+    {d:'2026-04-19',t:'16:05',end:'16:30',title:'Race #65/66 - Mixed 10\'s 2km Turn',loc:'Lake Kawana',type:'race'},
+    // Day 4 - Mon 20 Apr
+    {d:'2026-04-20',t:'06:30',end:'07:00',title:'Check Out & Depart',loc:'Pelican Waters Golf Resort',type:'travel'},
+    {d:'2026-04-20',t:'07:00',end:'07:30',title:'State Flag Bearer Ceremony',loc:'Lake Kawana',type:'ceremony'},
+    {d:'2026-04-20',t:'08:08',end:'08:16',title:'Race #2 - Junior Mixed R1',loc:'Lake Kawana, Lane 2',type:'race'},
+    {d:'2026-04-20',t:'08:24',end:'08:32',title:'Race #4 - 24U Mixed R1',loc:'Lake Kawana, Lane 2',type:'race'},
+    {d:'2026-04-20',t:'08:48',end:'08:56',title:'Race #7 - Prem Mixed R1',loc:'Lake Kawana, Lane 4/6',type:'race'},
+    {d:'2026-04-20',t:'09:12',end:'09:20',title:'Race #10 - Junior Mixed R2',loc:'Lake Kawana, Lane 4',type:'race'},
+    {d:'2026-04-20',t:'09:28',end:'09:36',title:'Race #12 - 24U Mixed R2',loc:'Lake Kawana, Lane 5',type:'race'},
+    {d:'2026-04-20',t:'09:52',end:'10:00',title:'Race #15 - Prem Mixed R2',loc:'Lake Kawana, Lane 1/4',type:'race'},
+    {d:'2026-04-20',t:'10:16',end:'10:24',title:'Race #18 - Junior Mixed R3',loc:'Lake Kawana, Lane 5',type:'race'},
+    {d:'2026-04-20',t:'10:32',end:'10:40',title:'Race #20 - 24U Mixed R3',loc:'Lake Kawana, Lane 4',type:'race'},
+    {d:'2026-04-20',t:'10:56',end:'11:04',title:'Race #23 - Prem Mixed R3',loc:'Lake Kawana, Lane 2/5',type:'race'},
+    {d:'2026-04-20',t:'11:55',end:'12:03',title:'Race #30 - Junior Open R1',loc:'Lake Kawana, Lane 4',type:'race'},
+    {d:'2026-04-20',t:'12:16',end:'12:24',title:'Race #33 - 24U Open R1',loc:'Lake Kawana, Lane 3',type:'race'},
+    {d:'2026-04-20',t:'12:37',end:'12:45',title:'Race #36 - Prem Women R1',loc:'Lake Kawana, Lane 3/7',type:'race'},
+    {d:'2026-04-20',t:'12:44',end:'12:52',title:'Race #37 - Prem Open R1',loc:'Lake Kawana, Lane 3/6',type:'race'},
+    {d:'2026-04-20',t:'13:26',end:'13:34',title:'Race #43 - Junior Open R2',loc:'Lake Kawana, Lane 1',type:'race'},
+    {d:'2026-04-20',t:'13:47',end:'13:55',title:'Race #46 - 24U Open R2',loc:'Lake Kawana, Lane 4',type:'race'},
+    {d:'2026-04-20',t:'14:08',end:'14:16',title:'Race #49 - Prem Women R2',loc:'Lake Kawana, Lane 5/7',type:'race'},
+    {d:'2026-04-20',t:'14:15',end:'14:23',title:'Race #50 - Prem Open R2',loc:'Lake Kawana, Lane 4/6',type:'race'},
+    {d:'2026-04-20',t:'15:20',end:'15:35',title:'Race #54 - 24U Mixed 1km Turn',loc:'Lake Kawana, Lane 8',type:'race'},
+    {d:'2026-04-20',t:'15:30',end:'15:45',title:'Race #55 - Junior Open 1km Turn',loc:'Lake Kawana, Lane 3',type:'race'},
+    {d:'2026-04-20',t:'15:40',end:'15:55',title:'Race #56 - 24U Open 1km Turn',loc:'Lake Kawana, Lane 3',type:'race'},
+    {d:'2026-04-20',t:'15:50',end:'16:05',title:'Race #57 - Prem Women 1km Turn',loc:'Lake Kawana, Lane 5/6',type:'race'},
+    {d:'2026-04-20',t:'16:00',end:'16:15',title:'Race #58 - Prem Open 1km Turn',loc:'Lake Kawana, Lane 4/5',type:'race'},
+    {d:'2026-04-20',t:'20:00',end:'20:30',title:'Depart to Melbourne',loc:'Flight JQ799, MCY Airport',type:'travel'},
+  ];
+
+  function toDate(d,t){return new Date(d+'T'+t+':00+10:00');}
+  function fmt(date){
+    let h=date.getHours(),m=date.getMinutes(),ap=h>=12?'pm':'am';
+    h=h%12||12;return h+':'+(m<10?'0':'')+m+ap;
+  }
+  function timeUntil(ms){
+    const mins=Math.round(ms/60000);
+    if(mins<1)return 'now';
+    if(mins<60)return 'in '+mins+'m';
+    const h=Math.floor(mins/60),rm=mins%60;
+    return rm?'in '+h+'h '+rm+'m':'in '+h+'h';
+  }
+
+  function renderCard(ev,label,isNow){
+    const isRace=ev.type==='race';
+    const cls=['live-card'];
+    if(isNow)cls.push('now-card');
+    if(isRace&&!isNow)cls.push('next-race');
+    if(isRace)cls.push('race-card');
+
+    const start=toDate(ev.d,ev.t);
+    const timeLabel=isNow?'Now \u00B7 started '+fmt(start):fmt(start);
+
+    let html='<div class="'+cls.join(' ')+'">';
+    html+='<div class="lc-indicator"></div>';
+    html+='<div class="lc-body">';
+    html+='<div class="lc-time'+(isNow?' now':'')+'">'+timeLabel+'</div>';
+    html+='<div class="lc-title">'+ev.title+'</div>';
+    html+='<div class="lc-loc">\u{1F4CD} '+ev.loc+'</div>';
+    if(isRace){
+      html+='<div class="lc-race-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> '+(isNow?'Racing now':'Up next')+'</div>';
+    }
+    html+='</div></div>';
+    return html;
+  }
+
+  function update(){
+    const container=document.getElementById('live-tracker');
+    const now=new Date();
+    // Only show during event window: Apr 17-20 2026
+    const eventStart=new Date('2026-04-17T00:00:00+10:00');
+    const eventEnd=new Date('2026-04-21T00:00:00+10:00');
+    if(now<eventStart||now>eventEnd){
+      // Before/after event: show next upcoming event
+      const next=EVENTS.filter(e=>toDate(e.d,e.t)>now);
+      if(next.length===0){container.innerHTML='';return;}
+      const ne=next[0];
+      const ms=toDate(ne.d,ne.t)-now;
+      let out='<div class="live-section">';
+      out+='<div class="live-label">Coming Up</div>';
+      out+=renderCard(ne,timeUntil(ms),false);
+      out+='</div>';
+      container.innerHTML=out;
+      return;
+    }
+
+    // During event
+    let current=null,upcoming=[];
+    for(const ev of EVENTS){
+      const s=toDate(ev.d,ev.t),e=toDate(ev.d,ev.end);
+      if(now>=s&&now<e){current=ev;}
+      else if(s>now){upcoming.push(ev);}
+    }
+
+    let out='<div class="live-section">';
+    if(current){
+      out+='<div class="live-label"><span class="live-dot"></span> Happening Now</div>';
+      out+=renderCard(current,'',true);
+    }
+
+    // Show next 2 upcoming
+    const nextEvents=upcoming.slice(0,2);
+    if(nextEvents.length){
+      out+='<div class="live-label" style="margin-top:12px">Up Next</div>';
+      for(const ne of nextEvents){
+        const ms=toDate(ne.d,ne.t)-now;
+        out+=renderCard(ne,timeUntil(ms),false);
+      }
+    }
+
+    if(!current&&!nextEvents.length){
+      out+='<div class="live-none">No more events today</div>';
+    }
+    out+='</div>';
+    container.innerHTML=out;
+  }
+
+  update();
+  setInterval(update,30000);
+})();
+
 (async function loadWeather(){
   const WMO={0:'\u2600\uFE0F',1:'\u26C5',2:'\u26C5',3:'\u2601\uFE0F',45:'\u{1F32B}\uFE0F',48:'\u{1F32B}\uFE0F',
     51:'\u{1F326}\uFE0F',53:'\u{1F326}\uFE0F',55:'\u{1F326}\uFE0F',61:'\u{1F327}\uFE0F',63:'\u{1F327}\uFE0F',
