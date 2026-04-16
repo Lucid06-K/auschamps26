@@ -674,7 +674,7 @@ body{
   <div class="rooms-page">
     <div class="resort-banner">
       <h3>Pelican Waters Golf Resort</h3>
-      <p>26 members (13W, 13M) across 7 rooms. Short drive to Lake Kawana racecourse.</p>
+      <p>26 members across 7 rooms. Short drive to Lake Kawana racecourse.</p>
       <div class="addr">&#x1F4CD; 38 Mahogany Drive, 4551 Caloundra</div>
     </div>
 
@@ -793,7 +793,7 @@ body{
 
     <div class="sos-card">
       <h3>National Emergency</h3>
-      <div class="sos-num">000</div>
+      <a href="tel:000" style="text-decoration:none;color:inherit"><div class="sos-num">000</div></a>
       <p>Police &middot; Ambulance &middot; Fire</p>
     </div>
   </div>
@@ -846,15 +846,17 @@ document.querySelectorAll('.expand-btn').forEach(btn=>{
 
 // Packing
 const items=document.querySelectorAll('.pack-item[data-k]');
-const saved=JSON.parse(localStorage.getItem('mudbc-pack')||'{}');
-function updateBar(){
+let saved;try{saved=JSON.parse(localStorage.getItem('mudbc-pack')||'{}');}catch(e){saved={};localStorage.removeItem('mudbc-pack');}
+let confettiFired=false;
+function updateBar(fromClick){
   const total=items.length,done=document.querySelectorAll('.pack-item.done').length;
   const pct=Math.round(done/total*100);
   document.getElementById('pp').textContent=pct===100?'All packed!':pct+'%';
   document.getElementById('pf').style.width=pct+'%';
   document.getElementById('pc').textContent=done;
   document.getElementById('pt').textContent=total;
-  if(pct===100)confetti();
+  if(pct===100&&fromClick&&!confettiFired){confettiFired=true;confetti();}
+  if(pct<100)confettiFired=false;
 }
 items.forEach(item=>{
   if(saved[item.dataset.k])item.classList.add('done');
@@ -863,7 +865,7 @@ items.forEach(item=>{
     const s=JSON.parse(localStorage.getItem('mudbc-pack')||'{}');
     item.classList.contains('done')?s[item.dataset.k]=1:delete s[item.dataset.k];
     localStorage.setItem('mudbc-pack',JSON.stringify(s));
-    updateBar();
+    updateBar(true);
   });
 });
 updateBar();
@@ -1004,17 +1006,17 @@ function confetti(){
     }
 
     // During event
-    let current=null,upcoming=[];
+    let currentEvents=[],upcoming=[];
     for(const ev of EVENTS){
       const s=toDate(ev.d,ev.t),e=toDate(ev.d,ev.end);
-      if(now>=s&&now<e){current=ev;}
+      if(now>=s&&now<e){currentEvents.push(ev);}
       else if(s>now){upcoming.push(ev);}
     }
 
     let out='<div class="live-section">';
-    if(current){
+    if(currentEvents.length){
       out+='<div class="live-label"><span class="live-dot"></span> Happening Now</div>';
-      out+=renderCard(current,'',true);
+      for(const ce of currentEvents){out+=renderCard(ce,'',true);}
     }
 
     // Show next 2 upcoming
@@ -1027,7 +1029,7 @@ function confetti(){
       }
     }
 
-    if(!current&&!nextEvents.length){
+    if(!currentEvents.length&&!nextEvents.length){
       out+='<div class="live-none">No more events today</div>';
     }
     out+='</div>';
