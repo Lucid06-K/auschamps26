@@ -437,23 +437,24 @@ body{
 
 /* Results */
 .result-input{
-  display:flex;gap:6px;margin-top:8px;align-items:center;
+  display:flex;gap:6px;margin-top:10px;align-items:center;
+  grid-column:1/-1;
 }
-.result-input select,.result-input input{
-  background:var(--bg3);border:1px solid var(--border);border-radius:var(--r3);
-  color:var(--text);padding:6px 10px;font-size:.75rem;font-family:inherit;
+.result-input select{
+  flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r3);
+  color:var(--text);padding:10px 12px;font-size:.85rem;font-family:inherit;
   -webkit-appearance:none;
 }
-.result-input select{min-width:60px}
-.result-input input{width:70px}
 .result-input button{
-  background:var(--blue);border:none;color:#fff;padding:6px 12px;
-  border-radius:var(--r3);font-size:.72rem;font-weight:600;cursor:pointer;
+  background:var(--blue);border:none;color:#fff;padding:10px 16px;
+  border-radius:var(--r3);font-size:.82rem;font-weight:600;cursor:pointer;
   font-family:inherit;white-space:nowrap;
 }
+.result-input button:active{transform:scale(.96)}
 .result-saved{
-  font-size:.72rem;color:var(--green);font-weight:600;margin-top:6px;
-  display:flex;align-items:center;gap:4px;
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  font-size:.68rem;font-weight:700;margin-top:4px;
+  background:var(--green-soft);color:var(--green);
 }
 
 /* Maps link */
@@ -1361,25 +1362,19 @@ const ALLRACES=[];
       document.querySelectorAll('.result-input').forEach(el=>el.remove());
       const wrap=document.createElement('div');
       wrap.className='result-input';
-      wrap.style.gridColumn='1/-1';
       const sel=document.createElement('select');
       ['--','1st','2nd','3rd','4th','5th','6th','7th','8th','DNS','DNF'].forEach(v=>{
         const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);
       });
-      const inp=document.createElement('input');
-      inp.type='text';inp.placeholder='Time';inp.setAttribute('inputmode','decimal');
       const btn=document.createElement('button');
       btn.textContent='Save';
       btn.addEventListener('click',e=>{
         e.stopPropagation();
-        const place=sel.value,time=inp.value;
-        if(place==='--'&&!time)return;
-        const label=(place!=='--'?place:'')+(time?' '+time:'');
-        // Save to Firestore
+        if(sel.value==='--')return;
         const docId=key.replace(/[/#]/g,'_');
         resultsRef.doc(docId).set({
           race:key,
-          result:label.trim(),
+          result:sel.value,
           updatedAt:firebase.firestore.FieldValue.serverTimestamp()
         },{merge:true}).then(()=>{
           showToast('Result saved & synced!');
@@ -1388,7 +1383,7 @@ const ALLRACES=[];
         });
         wrap.remove();
       });
-      wrap.appendChild(sel);wrap.appendChild(inp);wrap.appendChild(btn);
+      wrap.appendChild(sel);wrap.appendChild(btn);
       row.appendChild(wrap);
       sel.focus();
     });
