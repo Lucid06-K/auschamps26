@@ -814,9 +814,11 @@ document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',(
 // Countdown
 // Auto-select current day during event
 (function(){
-  const now=new Date(),map={d1:'2026-04-17',d2:'2026-04-18',d3:'2026-04-19',d4:'2026-04-20'};
+  const now=new Date();
+  const today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  const map={d1:'2026-04-17',d2:'2026-04-18',d3:'2026-04-19',d4:'2026-04-20'};
   for(const[id,ds]of Object.entries(map)){
-    if(now.toDateString()===new Date(ds).toDateString()){
+    if(today===ds){
       document.querySelectorAll('.day-pill').forEach(p=>p.classList.remove('active'));
       document.querySelectorAll('.day-content').forEach(c=>c.hidden=true);
       document.querySelector(`[data-day="${id}"]`).classList.add('active');
@@ -825,6 +827,26 @@ document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',(
     }
   }
 })();
+
+// Also auto-select current day when navigating to schedule
+const origGoTo=goTo;
+goTo=function(id){
+  origGoTo(id);
+  if(id==='schedule'){
+    const now=new Date();
+    const today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+    const map={d1:'2026-04-17',d2:'2026-04-18',d3:'2026-04-19',d4:'2026-04-20'};
+    for(const[id2,ds]of Object.entries(map)){
+      if(today===ds){
+        document.querySelectorAll('.day-pill').forEach(p=>p.classList.remove('active'));
+        document.querySelectorAll('.day-content').forEach(c=>c.hidden=true);
+        document.querySelector(`[data-day="${id2}"]`).classList.add('active');
+        document.getElementById(id2).hidden=false;
+        break;
+      }
+    }
+  }
+};
 
 // Day pills
 document.querySelectorAll('.day-pill').forEach(pill=>{
