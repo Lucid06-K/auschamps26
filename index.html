@@ -240,7 +240,7 @@ body{
 .ev-tag.logistics{background:rgba(100,116,139,.1);color:var(--text3)}
 
 /* Race detail rows */
-.race-list{margin-top:12px}
+.race-list{margin-top:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .race-row{
   display:grid;grid-template-columns:46px 58px 36px 1fr;gap:8px;align-items:center;
   padding:10px 0;border-top:1px solid var(--border);font-size:.78rem;
@@ -399,6 +399,29 @@ body{
 .sos-card h3{color:var(--red);font-size:.85rem;font-weight:700;margin-bottom:6px}
 .sos-num{font-size:2.2rem;font-weight:900;letter-spacing:.08em}
 .sos-card p{font-size:.75rem;color:var(--text2);margin-top:4px}
+
+/* ---- Mobile fixes ---- */
+@media(max-width:380px){
+  .hero-title{font-size:2rem}
+  .quick-actions{flex-wrap:wrap}
+  .qa-btn{flex:1 1 calc(50% - 5px);min-width:0}
+  .cd-row{grid-template-columns:repeat(2,1fr)}
+  .race-row{grid-template-columns:40px 52px 28px 1fr;gap:4px;font-size:.72rem}
+  .race-header{grid-template-columns:40px 52px 28px 1fr;gap:4px}
+  .result-input{flex-wrap:wrap}
+  .result-input select{flex:1 1 100%}
+  .result-input button{flex:1}
+  .ev-time{min-width:50px;font-size:.72rem}
+  .rb-row{flex-wrap:wrap;gap:4px}
+  .rb-race{flex:1 1 100%}
+}
+@media(max-width:480px){
+  .race-row{font-size:.74rem}
+  .rr-cat{word-break:break-word}
+  .result-input button{padding:10px 12px;font-size:.78rem}
+  .results-chips{gap:4px}
+  .result-chip{font-size:.68rem;padding:4px 8px}
+}
 
 /* ---- Desktop ---- */
 @media(min-width:768px){
