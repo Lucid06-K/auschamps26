@@ -949,12 +949,18 @@ body{
   border-color:var(--blue);
 }
 .pd-grip{
-  display:flex;align-items:center;justify-content:center;
-  width:28px;height:36px;cursor:grab;color:var(--text3);flex-shrink:0;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:3px;
+  width:20px;height:28px;cursor:grab;flex-shrink:0;
+  padding:2px;align-content:center;
   -webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;
 }
-.pd-grip:active{cursor:grabbing;color:var(--text)}
-.pd-grip svg{width:18px;height:18px;pointer-events:none}
+.pd-grip:active{cursor:grabbing}
+.pd-grip>span{
+  width:4px;height:4px;border-radius:50%;background:var(--text3);
+  pointer-events:none;transition:background .15s;
+}
+.pd-grip:hover>span,.pd-grip:active>span{background:var(--text)}
+.pd-item.dragging .pd-grip>span{background:var(--blue)}
 .pd-name{flex:1;font-size:.88rem;font-weight:500}
 .pd-count{font-size:.7rem;color:var(--text3);background:var(--bg3);padding:3px 8px;border-radius:100px}
 .pd-del{
@@ -2276,7 +2282,7 @@ function renderPaddlers(){
       row.className='pd-item';row.dataset.name=name;
       const grip=document.createElement('div');grip.className='pd-grip';
       grip.setAttribute('aria-label','Drag to reorder');
-      grip.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+      for(let k=0;k<6;k++){const dot=document.createElement('span');grip.appendChild(dot);}
       const nm=document.createElement('div');
       nm.className='pd-name';nm.textContent=name;
       const count=countPaddlerRaces(name);
@@ -2309,62 +2315,76 @@ function renderPaddlers(){
   });
 }
 
-function attachRosterDragHandlers(list){
-  let dragEl=null;
-
-  const getClientY=e=>{
-    if(e.touches&&e.touches[0])return e.touches[0].clientY;
-    if(e.changedTouches&&e.changedTouches[0])return e.changedTouches[0].clientY;
-    return e.clientY;
-  };
-
-  const onMove=e=>{
-    if(!dragEl)return;
-    e.preventDefault();
-    const y=getClientY(e);
-    const siblings=[...list.querySelectorAll('.pd-item:not(.dragging)')];
-    const next=siblings.find(sib=>{
-      const rect=sib.getBoundingClientRect();
-      return y<rect.top+rect.height/2;
-    });
-    if(next){list.insertBefore(dragEl,next);}
-    else{list.appendChild(dragEl);}
-  };
-
-  const onEnd=()=>{
-    if(!dragEl)return;
-    dragEl.classList.remove('dragging');
-    const newOrder=[...list.querySelectorAll('.pd-item')].map(r=>r.dataset.name);
-    dragEl=null;rosterDragActive=false;
-    document.removeEventListener('mousemove',onMove);
-    document.removeEventListener('mouseup',onEnd);
-    document.removeEventListener('touchmove',onMove);
-    document.removeEventListener('touchend',onEnd);
-    document.removeEventListener('touchcancel',onEnd);
-    if(JSON.stringify(newOrder)!==JSON.stringify(currentRoster)){
-      rosterRef.set({names:newOrder,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-    }
-  };
-
-  const startDrag=(grip,e)=>{
-    if(dragEl)return;
-    e.preventDefault();e.stopPropagation();
-    const item=grip.closest('.pd-item');
-    if(!item)return;
-    dragEl=item;rosterDragActive=true;
-    item.classList.add('dragging');
-    document.addEventListener('mousemove',onMove);
-    document.addEventListener('mouseup',onEnd);
-    document.addEventListener('touchmove',onMove,{passive:false});
-    document.addEventListener('touchend',onEnd);
-    document.addEventListener('touchcancel',onEnd);
-  };
-
-  list.querySelectorAll('.pd-grip').forEach(grip=>{
-    grip.addEventListener('mousedown',e=>startDrag(grip,e));
-    grip.addEventListener('touchstart',e=>startDrag(grip,e),{passive:false});
-  });
+// Global drag state and delegated handlers (attached once)
+let _rosterDragEl=null;
+function _rosterGetY(e){
+  if(e.touches&&e.touches[0])return e.touches[0].clientY;
+  if(e.changedTouches&&e.changedTouches[0])return e.changedTouches[0].clientY;
+  return e.clientY;
 }
+function _rosterOnMove(e){
+  if(!_rosterDragEl)return;
+  e.preventDefault();
+  const list=document.getElementById('pdList');
+  if(!list)return;
+  const y=_rosterGetY(e);
+  const siblings=[...list.querySelectorAll('.pd-item:not(.dragging)')];
+  const next=siblings.find(sib=>{
+    const r=sib.getBoundingClientRect();
+    return y<r.top+r.height/2;
+  });
+  if(next){list.insertBefore(_rosterDragEl,next);}
+  else{list.appendChild(_rosterDragEl);}
+}
+function _rosterOnEnd(){
+  if(!_rosterDragEl)return;
+  _rosterDragEl.classList.remove('dragging');
+  const list=document.getElementById('pdList');
+  const newOrder=list?[...list.querySelectorAll('.pd-item')].map(r=>r.dataset.name):[];
+  _rosterDragEl=null;rosterDragActive=false;
+  document.removeEventListener('mousemove',_rosterOnMove);
+  document.removeEventListener('mouseup',_rosterOnEnd);
+  document.removeEventListener('touchmove',_rosterOnMove);
+  document.removeEventListener('touchend',_rosterOnEnd);
+  document.removeEventListener('touchcancel',_rosterOnEnd);
+  if(newOrder.length&&JSON.stringify(newOrder)!==JSON.stringify(currentRoster)){
+    rosterRef.set({names:newOrder,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  }
+}
+function _rosterStartDrag(grip,e){
+  if(_rosterDragEl)return;
+  const item=grip.closest('.pd-item');
+  if(!item)return;
+  e.preventDefault();e.stopPropagation();
+  _rosterDragEl=item;rosterDragActive=true;
+  item.classList.add('dragging');
+  document.addEventListener('mousemove',_rosterOnMove);
+  document.addEventListener('mouseup',_rosterOnEnd);
+  document.addEventListener('touchmove',_rosterOnMove,{passive:false});
+  document.addEventListener('touchend',_rosterOnEnd);
+  document.addEventListener('touchcancel',_rosterOnEnd);
+}
+// Delegate drag starts from the list container (works for any grip, even after re-render)
+(function attachRosterDragOnce(){
+  let attached=false;
+  const observer=new MutationObserver(()=>{
+    const list=document.getElementById('pdList');
+    if(list&&!attached){
+      list.addEventListener('mousedown',e=>{
+        const grip=e.target.closest('.pd-grip');
+        if(grip)_rosterStartDrag(grip,e);
+      });
+      list.addEventListener('touchstart',e=>{
+        const grip=e.target.closest('.pd-grip');
+        if(grip)_rosterStartDrag(grip,e);
+      },{passive:false});
+      attached=true;
+      observer.disconnect();
+    }
+  });
+  observer.observe(document.body,{childList:true,subtree:true});
+})();
+function attachRosterDragHandlers(){/* no-op, delegation handles it */}
 
 function countPaddlerRaces(name){
   let n=0;
