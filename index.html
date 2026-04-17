@@ -2539,6 +2539,13 @@ function openLineupViewer(race,lineup){
   if(lineup.drummer===myPaddler)drumVal.style.color='var(--blue)';
   drumTop.appendChild(drumLbl);drumTop.appendChild(drumVal);
   boat.appendChild(drumTop);
+  const hdr=document.createElement('div');hdr.className='mr-seat-row';
+  hdr.style.cssText='margin-bottom:6px;font-size:.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;text-align:center';
+  const hs=document.createElement('span');hs.textContent='SEAT';
+  const hL=document.createElement('div');hL.textContent='LEFT';
+  const hR=document.createElement('div');hR.textContent='RIGHT';
+  hdr.appendChild(hs);hdr.appendChild(hL);hdr.appendChild(hR);
+  boat.appendChild(hdr);
   for(let i=1;i<=10;i++){
     const row=document.createElement('div');row.className='mr-seat-row';row.style.margin='4px 0';
     const num=document.createElement('span');num.textContent=i;
@@ -3007,6 +3014,17 @@ function renderYourNextRace(){
   mapBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;pointer-events:none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span style="pointer-events:none">Venue</span>';
   btnRow.appendChild(btn);btnRow.appendChild(mapBtn);
   card.appendChild(head);card.appendChild(title);card.appendChild(time);card.appendChild(seat);card.appendChild(btnRow);
+
+  // Change name link
+  const chgWrap=document.createElement('div');
+  chgWrap.style.cssText='text-align:center;margin-top:10px';
+  const chg=document.createElement('button');
+  chg.style.cssText='background:none;border:none;color:var(--text3);font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;padding:6px;text-decoration:underline';
+  chg.textContent='Not '+myPaddler+'? Change name';
+  chg.addEventListener('click',pickMyName);
+  chgWrap.appendChild(chg);
+  card.appendChild(chgWrap);
+
   c.appendChild(card);
 }
 
@@ -3113,11 +3131,18 @@ function renderMyRaces(){
     return;
   }
 
-  sub.textContent=myPaddler+' \u00B7 '+Object.keys(currentLineups).filter(id=>{
+  const raceCount=Object.keys(currentLineups).filter(id=>{
     const l=currentLineups[id];
     const all=Object.values(l.seats||{}).concat([l.drummer,l.sweep]);
     return all.includes(myPaddler);
-  }).length+' race(s)';
+  }).length;
+  sub.textContent='';
+  const subName=document.createElement('span');subName.textContent=myPaddler+' \u00B7 '+raceCount+' race(s) \u00B7 ';
+  const subChg=document.createElement('button');
+  subChg.style.cssText='background:none;border:none;color:var(--blue);font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;padding:0;text-decoration:underline';
+  subChg.textContent='Change name';
+  subChg.addEventListener('click',pickMyName);
+  sub.appendChild(subName);sub.appendChild(subChg);
 
   const now=new Date();
   const mine=RACE_DATA.map(r=>{
@@ -3185,6 +3210,13 @@ function renderMyRaces(){
 
     // Build boat preview
     const boat=document.createElement('div');boat.className='mr-boat-mini';
+    const hdr=document.createElement('div');hdr.className='mr-seat-row';
+    hdr.style.cssText='margin-bottom:6px;font-size:.58rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;text-align:center';
+    const hs=document.createElement('span');hs.textContent='SEAT';
+    const hL=document.createElement('div');hL.textContent='LEFT';
+    const hR=document.createElement('div');hR.textContent='RIGHT';
+    hdr.appendChild(hs);hdr.appendChild(hL);hdr.appendChild(hR);
+    boat.appendChild(hdr);
     for(let i=1;i<=10;i++){
       const row=document.createElement('div');row.className='mr-seat-row';
       const num=document.createElement('span');num.textContent=i;
