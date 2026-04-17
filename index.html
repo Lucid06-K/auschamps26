@@ -2248,9 +2248,11 @@ lineupsRef.onSnapshot(snap=>{
 });
 
 // ======== PADDLERS PAGE ========
+let rosterDragActive=false;
 function renderPaddlers(){
   const list=document.getElementById('pdList');
   if(!list)return;
+  if(rosterDragActive)return;
   // Preserve scroll position of the page during re-render
   const scrollY=window.scrollY;
   const searchEl=document.getElementById('pdSearch');
@@ -2308,42 +2310,44 @@ function renderPaddlers(){
 }
 
 function attachRosterDragHandlers(list){
-  let dragEl=null,startY=0,pointerId=null;
+  let dragEl=null,activePointerId=null;
+  const onMove=e=>{
+    if(!dragEl)return;
+    e.preventDefault();
+    const y=e.clientY;
+    const siblings=[...list.querySelectorAll('.pd-item:not(.dragging)')];
+    const next=siblings.find(sib=>{
+      const rect=sib.getBoundingClientRect();
+      return y<rect.top+rect.height/2;
+    });
+    if(next){list.insertBefore(dragEl,next);}
+    else{list.appendChild(dragEl);}
+  };
+  const onEnd=e=>{
+    if(!dragEl)return;
+    dragEl.classList.remove('dragging');
+    const newOrder=[...list.querySelectorAll('.pd-item')].map(r=>r.dataset.name);
+    dragEl=null;activePointerId=null;rosterDragActive=false;
+    document.removeEventListener('pointermove',onMove);
+    document.removeEventListener('pointerup',onEnd);
+    document.removeEventListener('pointercancel',onEnd);
+    if(JSON.stringify(newOrder)!==JSON.stringify(currentRoster)){
+      rosterRef.set({names:newOrder,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    }
+  };
   list.querySelectorAll('.pd-grip').forEach(grip=>{
     grip.addEventListener('pointerdown',e=>{
+      if(activePointerId!==null)return;
       e.preventDefault();
-      dragEl=grip.closest('.pd-item');
-      if(!dragEl)return;
-      startY=e.clientY;pointerId=e.pointerId;
-      dragEl.classList.add('dragging');
-      grip.setPointerCapture(e.pointerId);
+      const item=grip.closest('.pd-item');
+      if(!item)return;
+      dragEl=item;activePointerId=e.pointerId;
+      rosterDragActive=true;
+      item.classList.add('dragging');
+      document.addEventListener('pointermove',onMove,{passive:false});
+      document.addEventListener('pointerup',onEnd);
+      document.addEventListener('pointercancel',onEnd);
     });
-    grip.addEventListener('pointermove',e=>{
-      if(!dragEl)return;
-      const y=e.clientY;
-      // Find sibling to swap with
-      const siblings=[...list.querySelectorAll('.pd-item:not(.dragging)')];
-      const next=siblings.find(sib=>{
-        const rect=sib.getBoundingClientRect();
-        return y<rect.top+rect.height/2;
-      });
-      if(next){list.insertBefore(dragEl,next);}
-      else{list.appendChild(dragEl);}
-    });
-    const endDrag=e=>{
-      if(!dragEl)return;
-      dragEl.classList.remove('dragging');
-      try{grip.releasePointerCapture(pointerId);}catch(err){}
-      dragEl=null;
-      // Commit new order
-      const newOrder=[...list.querySelectorAll('.pd-item')].map(r=>r.dataset.name);
-      // Only save if order actually changed
-      if(JSON.stringify(newOrder)!==JSON.stringify(currentRoster)){
-        rosterRef.set({names:newOrder,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-      }
-    };
-    grip.addEventListener('pointerup',endDrag);
-    grip.addEventListener('pointercancel',endDrag);
   });
 }
 
