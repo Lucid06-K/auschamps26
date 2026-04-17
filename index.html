@@ -3072,18 +3072,54 @@ loadoutsRef.orderBy('updatedAt','desc').onSnapshot(snap=>{
 function saveAsLoadout(existing){
   const hasAnyone=(existing.seats&&Object.values(existing.seats).filter(x=>x).length>0)||existing.drummer||existing.sweep;
   if(!hasAnyone){showToast('Nothing to save - lineup is empty');return;}
-  const name=prompt('Name this template (e.g. "Premier Mixed", "Open 10s A"):','');
-  if(!name||!name.trim())return;
-  const cleanName=name.trim().slice(0,60);
-  const docId=cleanName.replace(/[^a-zA-Z0-9]/g,'_').toLowerCase();
-  const data={
-    name:cleanName,
-    seats:existing.seats||{},
-    drummer:existing.drummer||'',
-    sweep:existing.sweep||'',
-    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-  };
-  loadoutsRef.doc(docId).set(data).then(()=>showToast('Template saved: '+cleanName));
+
+  const overlay=document.createElement('div');overlay.className='pp-overlay';
+  overlay.style.animation='none';
+  const sheet=document.createElement('div');sheet.className='pp-sheet';
+  sheet.style.animation='none';sheet.style.borderRadius='16px 16px 0 0';
+  const head=document.createElement('div');head.className='pp-head';
+  const h=document.createElement('h4');h.textContent='Save lineup as template';head.appendChild(h);
+  const hint=document.createElement('div');
+  hint.style.cssText='font-size:.78rem;color:var(--text2);margin:8px 0 12px;line-height:1.5';
+  hint.textContent='Give this template a name so you can apply it to other races later.';
+  head.appendChild(hint);
+
+  const form=document.createElement('form');
+  form.style.cssText='display:flex;gap:8px;margin-bottom:12px';
+  const input=document.createElement('input');
+  input.type='text';input.className='pp-search';input.style.flex='1';
+  input.placeholder='e.g. Premier Mixed A';input.autocomplete='off';input.maxLength=60;
+  const saveBtn=document.createElement('button');
+  saveBtn.type='submit';saveBtn.textContent='Save';
+  saveBtn.style.cssText='background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:var(--r3);font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit';
+  form.appendChild(input);form.appendChild(saveBtn);
+
+  form.addEventListener('submit',e=>{
+    e.preventDefault();
+    const name=(input.value||'').trim();
+    if(!name){input.focus();return;}
+    const cleanName=name.slice(0,60);
+    const docId=cleanName.replace(/[^a-zA-Z0-9]/g,'_').toLowerCase();
+    loadoutsRef.doc(docId).set({
+      name:cleanName,
+      seats:existing.seats||{},
+      drummer:existing.drummer||'',
+      sweep:existing.sweep||'',
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    }).then(()=>{overlay.remove();showToast('Template saved: '+cleanName);})
+    .catch(()=>showToast('Save failed - check connection'));
+  });
+
+  const cancel=document.createElement('button');
+  cancel.type='button';cancel.textContent='Cancel';
+  cancel.style.cssText='background:none;border:none;color:var(--text3);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;width:100%;padding:10px';
+  cancel.addEventListener('click',()=>overlay.remove());
+
+  head.appendChild(form);head.appendChild(cancel);
+  sheet.appendChild(head);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  overlay.appendChild(sheet);document.body.appendChild(overlay);
+  setTimeout(()=>input.focus(),50);
 }
 
 function openLoadoutPicker(race,raceDocId,existing,onApplied){
@@ -3124,8 +3160,13 @@ function openLoadoutPicker(race,raceDocId,existing,onApplied){
       const del=document.createElement('button');del.className='lo-del';del.textContent='\u00D7';del.setAttribute('aria-label','Delete '+lo.name);
       del.addEventListener('click',e=>{
         e.stopPropagation();
-        if(!confirm('Delete template "'+lo.name+'"?'))return;
-        loadoutsRef.doc(lo.id).delete().then(()=>{showToast('Template deleted');render();});
+        if(del.dataset.confirm==='1'){
+          loadoutsRef.doc(lo.id).delete().then(()=>{showToast('Template deleted');render();});
+        }else{
+          del.dataset.confirm='1';del.textContent='?';
+          del.style.background='var(--red)';del.style.color='#fff';
+          setTimeout(()=>{if(del.dataset)del.dataset.confirm='';del.textContent='\u00D7';del.style.background='';del.style.color='';},3000);
+        }
       });
       row.appendChild(nameDiv);row.appendChild(apply);row.appendChild(del);
       listWrap.appendChild(row);
