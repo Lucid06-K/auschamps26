@@ -2580,10 +2580,29 @@ function openLineupEditor(race){
   const sheet=document.createElement('div');
   sheet.className='le-sheet';
 
+  // Track whether user just saved locally (to avoid clobbering their own input with echo from Firestore)
+  let localSaveAt=0;
+
+  // Live listener - refresh editor when another device changes this lineup
+  const unsubLive=lineupsRef.doc(id).onSnapshot(snap=>{
+    if(!snap.exists)return;
+    // Ignore snapshot if we just saved locally within last 500ms (avoids flicker)
+    if(Date.now()-localSaveAt<500)return;
+    const d=snap.data()||{};
+    existing.seats=d.seats||{};
+    existing.drummer=d.drummer||'';
+    existing.sweep=d.sweep||'';
+    // Don't overwrite notes textarea if user is typing
+    if(document.activeElement!==notesRef.el)existing.notes=d.notes||'';
+    if(typeof refreshAllSeats==='function')refreshAllSeats();
+    if(notesRef.el&&document.activeElement!==notesRef.el)notesRef.el.value=existing.notes;
+  },err=>{console.warn('Live lineup listener error',err);});
+  const notesRef={el:null};
+
   // Header
   const header=document.createElement('div');header.className='le-header';
   const close=document.createElement('button');close.className='le-close';close.textContent='\u00D7';close.setAttribute('aria-label','Close');
-  close.addEventListener('click',()=>overlay.remove());
+  close.addEventListener('click',()=>{unsubLive();overlay.remove();});
   const titleDiv=document.createElement('div');titleDiv.className='le-title';
   const h=document.createElement('h3');
   const m=race.title.match(/Race\s+(#?[\d\/\-]+)/);
@@ -2735,6 +2754,7 @@ function openLineupEditor(race){
   notesLbl.textContent='Notes';
   const notes=document.createElement('textarea');notes.className='le-notes';notes.placeholder='Any notes for this race...';
   notes.value=existing.notes||'';
+  notesRef.el=notes;
   notes.addEventListener('blur',()=>{
     lineupsRef.doc(id).set({notes:notes.value,raceId:id,race:race.title,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
   });
@@ -2788,13 +2808,25 @@ function openLineupEditor(race){
   const exitBtn=document.createElement('button');
   exitBtn.className='le-exit-btn';
   exitBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M18 6L6 18M6 6l12 12"/></svg> Close lineup editor';
-  exitBtn.addEventListener('click',()=>overlay.remove());
+  exitBtn.addEventListener('click',()=>{unsubLive();overlay.remove();});
   body.appendChild(exitBtn);
 
   sheet.appendChild(header);sheet.appendChild(body);
   overlay.appendChild(sheet);
-  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  overlay.addEventListener('click',e=>{if(e.target===overlay){unsubLive();overlay.remove();}});
   document.body.appendChild(overlay);
+
+  // Expose localSaveAt for saveLineupSeat to ping
+  overlay._markLocalSave=()=>{localSaveAt=Date.now();};
+  window._activeLineupOverlay=overlay;
+
+  // Clean up on any close path
+  const origRemove=overlay.remove.bind(overlay);
+  overlay.remove=function(){
+    try{unsubLive();}catch(e){}
+    if(window._activeLineupOverlay===overlay)window._activeLineupOverlay=null;
+    origRemove();
+  };
 }
 
 function saveLineupSeat(id,key,chosen,existing){
@@ -2817,6 +2849,11 @@ function saveLineupSeat(id,key,chosen,existing){
   if(key==='drummer'){existing.drummer=chosen;}
   else if(key==='sweep'){existing.sweep=chosen;}
   else{if(chosen)existing.seats[key]=chosen;else delete existing.seats[key];}
+
+  // Mark local save time so the live listener ignores our own echo
+  if(window._activeLineupOverlay&&window._activeLineupOverlay._markLocalSave){
+    window._activeLineupOverlay._markLocalSave();
+  }
 
   // Write the full lineup to Firestore (set without merge replaces everything)
   lineupsRef.doc(id).set({
