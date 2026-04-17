@@ -260,6 +260,13 @@ body{
 .rb-gf{background:var(--red-soft);color:var(--red)}
 .rb-turn{background:var(--green-soft);color:var(--green)}
 .rb-round{background:rgba(100,116,139,.12);color:var(--text2)}
+.rb-dist-200{background:rgba(6,182,212,.15);color:#22d3ee}
+.rb-dist-500{background:rgba(59,130,246,.15);color:var(--blue)}
+.rb-dist-1km{background:rgba(16,185,129,.15);color:#34d399}
+.rb-dist-2km{background:rgba(20,184,166,.15);color:#2dd4bf}
+.rb-cat{background:rgba(148,163,184,.1);color:var(--text2);font-weight:600}
+.rd-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.rd-tags .race-badge2{font-size:.62rem;padding:2px 7px}
 
 /* Expandable */
 .expand-btn{
@@ -567,32 +574,51 @@ body{
   font-size:.68rem;font-weight:700;color:var(--text3);
   text-transform:uppercase;letter-spacing:.1em;margin:16px 0 8px;
 }
-.rd-race{
-  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
-  padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;
-  cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;
+.rd-table{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
+  overflow:hidden;margin-bottom:8px;
 }
+.rd-table-head{
+  display:grid;grid-template-columns:52px 58px 1fr 72px;gap:6px;
+  padding:8px 10px;background:var(--bg3);
+  font-size:.6rem;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.08em;
+  border-bottom:1px solid var(--border);
+}
+.rd-race{
+  display:grid;grid-template-columns:52px 58px 1fr 72px;gap:6px;
+  padding:10px;align-items:center;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .12s;
+  -webkit-tap-highlight-color:transparent;
+}
+.rd-race:last-child{border-bottom:none}
 .rd-race:active{background:var(--bg3)}
-.rd-race.past{opacity:.45}
+.rd-race.past{opacity:.4}
 .rd-race.live{
-  border-color:var(--green);background:linear-gradient(135deg,rgba(34,197,94,.1),rgba(34,197,94,.02));
+  background:linear-gradient(90deg,rgba(34,197,94,.12),rgba(34,197,94,.03));
+  border-left:3px solid var(--green);padding-left:7px;
   animation:pulseGreen 2s ease-in-out infinite;
 }
 .rd-race.next{
-  border-color:var(--gold);background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02));
+  background:linear-gradient(90deg,rgba(245,158,11,.1),rgba(245,158,11,.02));
+  border-left:3px solid var(--gold);padding-left:7px;
 }
-@keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}50%{box-shadow:0 0 0 4px rgba(34,197,94,.15)}}
+@keyframes pulseGreen{0%,100%{box-shadow:inset 0 0 0 0 rgba(34,197,94,0)}50%{box-shadow:inset 0 0 20px 0 rgba(34,197,94,.08)}}
+.rd-race-num{
+  font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;
+  font-size:.78rem;font-weight:700;color:var(--text2);
+}
 .rd-time{
-  flex-shrink:0;min-width:56px;text-align:center;
+  font-variant-numeric:tabular-nums;
+  font-size:.75rem;font-weight:600;color:var(--text);
 }
-.rd-time-main{font-size:.82rem;font-weight:700;color:var(--blue)}
-.rd-time-sub{font-size:.65rem;color:var(--text3);margin-top:2px}
-.rd-info{flex:1;min-width:0}
-.rd-race-num{font-size:.68rem;font-weight:700;color:var(--text3);margin-bottom:2px}
-.rd-race-title{font-size:.85rem;font-weight:700;line-height:1.3}
+.rd-time-sub{font-size:.6rem;color:var(--text3);margin-top:1px;font-weight:500}
+.rd-info{min-width:0;display:flex;flex-wrap:wrap;gap:3px;align-items:center}
 .rd-status{
-  flex-shrink:0;padding:4px 10px;border-radius:100px;
-  font-size:.65rem;font-weight:700;
+  justify-self:end;padding:3px 8px;border-radius:4px;
+  font-size:.62rem;font-weight:700;font-variant-numeric:tabular-nums;
+  white-space:nowrap;
 }
 .rd-status.empty{background:var(--bg3);color:var(--text3)}
 .rd-status.partial{background:var(--gold-soft);color:var(--gold)}
@@ -2064,8 +2090,47 @@ function renderRaceDay(){
     const hdr=document.createElement('div');
     hdr.className='rd-day-label';hdr.textContent=dayLabels[d]||d;
     list.appendChild(hdr);
-    days[d].forEach(r=>list.appendChild(renderRaceRow(r,now)));
+    const table=document.createElement('div');table.className='rd-table';
+    const th=document.createElement('div');th.className='rd-table-head';
+    th.innerHTML='<span>Race</span><span>Time</span><span>Event</span><span style="text-align:right">Status</span>';
+    table.appendChild(th);
+    days[d].forEach(r=>table.appendChild(renderRaceRow(r,now)));
+    list.appendChild(table);
   });
+}
+
+// Parse "Open 10's 200m Heat" into {stage, distance, category}
+function parseRaceTitle(titleOnly){
+  // Strip leading "Race #NN - " (already done by caller)
+  let s=titleOnly.trim();
+  // Stage: Heat, Rep, SF, GF, Turn, R1, R2, R3, Grand Final
+  let stage='';
+  const stagePatterns=[
+    [/\bGrand Final\b/i,'GF'],[/\bHeat\b/i,'Heat'],[/\bReps?\b/i,'Rep'],
+    [/\bSF\b/i,'SF'],[/\bGF\b/i,'GF'],[/\bTurn\b/i,'Turn'],
+    [/\bR1\b/i,'R1'],[/\bR2\b/i,'R2'],[/\bR3\b/i,'R3'],
+  ];
+  for(const[re,lbl]of stagePatterns){if(re.test(s)){stage=lbl;s=s.replace(re,'').trim();break;}}
+  // Distance: 200m, 500m, 1km, 2km
+  let distance='';
+  const distMatch=s.match(/(\d+(?:km|m))/i);
+  if(distMatch){distance=distMatch[1];s=s.replace(distMatch[0],'').trim();}
+  // What's left is the category
+  const category=s.replace(/\s+/g,' ').trim();
+  return {stage,distance,category};
+}
+
+function stageBadgeClass(stage){
+  const m={'Heat':'rb-heat','Rep':'rb-rep','SF':'rb-sf','GF':'rb-gf','Turn':'rb-turn','R1':'rb-round','R2':'rb-round','R3':'rb-round'};
+  return m[stage]||'rb-round';
+}
+function distBadgeClass(d){
+  if(!d)return'';
+  if(d==='200m')return'rb-dist-200';
+  if(d==='500m')return'rb-dist-500';
+  if(d==='1km')return'rb-dist-1km';
+  if(d==='2km')return'rb-dist-2km';
+  return'rb-dist-500';
 }
 
 function raceId(r){return (r.d+'_'+r.t).replace(/[:\-]/g,'');}
@@ -2083,56 +2148,64 @@ function renderRaceRow(r,now){
   if(isLive)row.classList.add('live');
   else if(isNext)row.classList.add('next');
 
-  const time=document.createElement('div');time.className='rd-time';
-  const tm=document.createElement('div');tm.className='rd-time-main';
-  const tSplit=r.t.split(':');let h=parseInt(tSplit[0]);const m=tSplit[1];const ap=h>=12?'pm':'am';h=h%12||12;
-  tm.textContent=h+':'+m+ap;
-  const ts=document.createElement('div');ts.className='rd-time-sub';
-  if(isLive)ts.textContent='LIVE';
-  else if(isNext){const mins=Math.round(diff/60000);ts.textContent='in '+mins+'m';}
-  else if(isPast)ts.textContent='done';
-  else ts.textContent='';
-  time.appendChild(tm);time.appendChild(ts);
-
-  const info=document.createElement('div');info.className='rd-info';
+  // Column 1: Race number
   const num=document.createElement('div');num.className='rd-race-num';
   const raceMatch=r.title.match(/Race\s+(#?[\d\/\-]+)/);
-  num.textContent=raceMatch?raceMatch[1]:'';
-  const title=document.createElement('div');title.className='rd-race-title';
-  title.textContent=r.title.replace(/Race\s+#?[\d\/\-]+\s*-?\s*/,'');
-  info.appendChild(num);info.appendChild(title);
+  num.textContent=raceMatch?raceMatch[1]:'-';
 
+  // Column 2: Time
+  const time=document.createElement('div');time.className='rd-time';
+  const tSplit=r.t.split(':');let h=parseInt(tSplit[0]);const m=tSplit[1];const ap=h>=12?'pm':'am';h=h%12||12;
+  const tm=document.createElement('div');tm.textContent=h+':'+m+ap;time.appendChild(tm);
+  if(isLive||isNext||isPast){
+    const ts=document.createElement('div');ts.className='rd-time-sub';
+    if(isLive)ts.textContent='LIVE';
+    else if(isNext){const mins=Math.round(diff/60000);ts.textContent='in '+mins+'m';}
+    else ts.textContent='done';
+    time.appendChild(ts);
+  }
+
+  // Column 3: Event tags
+  const info=document.createElement('div');info.className='rd-info';
+  const titleOnly=r.title.replace(/Race\s+#?[\d\/\-]+\s*-?\s*/,'');
+  const parsed=parseRaceTitle(titleOnly);
+  if(parsed.stage){
+    const s=document.createElement('span');
+    s.className='race-badge2 '+stageBadgeClass(parsed.stage);
+    s.textContent=parsed.stage;info.appendChild(s);
+  }
+  if(parsed.distance){
+    const d=document.createElement('span');
+    d.className='race-badge2 '+distBadgeClass(parsed.distance);
+    d.textContent=parsed.distance;info.appendChild(d);
+  }
+  if(parsed.category){
+    const c=document.createElement('span');
+    c.className='race-badge2 rb-cat';
+    c.textContent=parsed.category;info.appendChild(c);
+  }
+
+  // Column 4: Status
   const id=raceId(r);
   const lineup=currentLineups[id];
   const seatCount=lineup?Object.values(lineup.seats||{}).filter(x=>x).length:0;
   const hasDrummer=lineup&&lineup.drummer;
   const hasSweep=lineup&&lineup.sweep;
   const total=seatCount+(hasDrummer?1:0)+(hasSweep?1:0);
-  // Check for result
   const raceNumMatch=r.title.match(/Race\s+(#[\d\/\-]+)/);
   const raceNum=raceNumMatch?raceNumMatch[1]:null;
   const resultValue=raceNum&&window.currentResults?window.currentResults[raceNum]:null;
 
   const status=document.createElement('div');
   status.className='rd-status';
-  if(resultValue){
-    status.classList.add('result');
-    status.textContent=resultValue;
-  }else if(isLive){status.classList.add('live');status.textContent='LIVE';}
+  if(resultValue){status.classList.add('result');status.textContent='\u{1F3C6} '+resultValue;}
+  else if(isLive){status.classList.add('live');status.textContent='LIVE';}
   else if(isNext){status.classList.add('next');status.textContent='NEXT';}
   else if(total===22){status.classList.add('full');status.textContent='22/22';}
   else if(total>0){status.classList.add('partial');status.textContent=total+'/22';}
-  else{status.classList.add('empty');status.textContent='not set';}
+  else{status.classList.add('empty');status.textContent='open';}
 
-  // If result exists, add result subtitle under title
-  if(resultValue){
-    const resTag=document.createElement('div');
-    resTag.style.cssText='font-size:.68rem;font-weight:700;color:var(--green);margin-top:3px';
-    resTag.textContent='\u{1F3C6} Finished: '+resultValue;
-    info.appendChild(resTag);
-  }
-
-  row.appendChild(time);row.appendChild(info);row.appendChild(status);
+  row.appendChild(num);row.appendChild(time);row.appendChild(info);row.appendChild(status);
   row.addEventListener('click',()=>openLineupEditor(r));
   return row;
 }
