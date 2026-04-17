@@ -582,6 +582,35 @@ body{
 .rd-status.full{background:var(--green-soft);color:var(--green)}
 .rd-status.live{background:var(--green);color:#fff}
 .rd-status.next{background:var(--gold);color:#000}
+.rd-status.result{background:var(--gold);color:#000;font-size:.72rem}
+
+/* Result logger in lineup editor */
+.le-result-box{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px 16px;margin-top:16px;
+}
+.le-result-title{
+  font-size:.72rem;font-weight:700;color:var(--text2);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;
+}
+.le-result-current{
+  background:var(--gold-soft);border:1px solid var(--gold-border);
+  color:var(--gold);padding:8px 12px;border-radius:var(--r3);
+  font-size:.82rem;font-weight:700;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.le-result-row{display:flex;gap:8px}
+.le-result-row select{
+  flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r3);
+  color:var(--text);padding:10px 12px;font-size:.85rem;font-family:inherit;
+  -webkit-appearance:none;
+}
+.le-result-row button{
+  padding:10px 14px;border-radius:var(--r3);border:none;
+  font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;
+}
+.le-result-save{background:var(--blue);color:#fff}
+.le-result-clear{background:var(--red-soft);color:var(--red);border:1px solid var(--red-border)!important}
 
 /* ---- Lineup Editor ---- */
 .le-overlay{
@@ -1783,10 +1812,12 @@ const ALLRACES=[];
     // 1. Update race table badges
     document.querySelectorAll('.result-saved').forEach(el=>el.remove());
     const allResults=[];
+    window.currentResults={};
     snapshot.forEach(doc=>{
       const data=doc.data();
       if(!data.result)return;
       allResults.push(data);
+      window.currentResults[data.race]=data.result;
       const row=rowMap[data.race];
       if(!row)return;
       const catEl=row.querySelector('.rr-cat');
@@ -1864,6 +1895,8 @@ const ALLRACES=[];
         rbList.appendChild(row);
       });
     }
+    // 4. Re-render Race Day to show result badges on rows
+    if(typeof renderRaceDay==='function')renderRaceDay();
   },err=>{
     console.warn('Firestore listener error:',err);
   });
@@ -2055,13 +2088,29 @@ function renderRaceRow(r,now){
   const hasDrummer=lineup&&lineup.drummer;
   const hasSweep=lineup&&lineup.sweep;
   const total=seatCount+(hasDrummer?1:0)+(hasSweep?1:0);
+  // Check for result
+  const raceNumMatch=r.title.match(/Race\s+(#[\d\/\-]+)/);
+  const raceNum=raceNumMatch?raceNumMatch[1]:null;
+  const resultValue=raceNum&&window.currentResults?window.currentResults[raceNum]:null;
+
   const status=document.createElement('div');
   status.className='rd-status';
-  if(isLive){status.classList.add('live');status.textContent='LIVE';}
+  if(resultValue){
+    status.classList.add('result');
+    status.textContent=resultValue;
+  }else if(isLive){status.classList.add('live');status.textContent='LIVE';}
   else if(isNext){status.classList.add('next');status.textContent='NEXT';}
   else if(total===22){status.classList.add('full');status.textContent='22/22';}
   else if(total>0){status.classList.add('partial');status.textContent=total+'/22';}
   else{status.classList.add('empty');status.textContent='not set';}
+
+  // If result exists, add result subtitle under title
+  if(resultValue){
+    const resTag=document.createElement('div');
+    resTag.style.cssText='font-size:.68rem;font-weight:700;color:var(--green);margin-top:3px';
+    resTag.textContent='\u{1F3C6} Finished: '+resultValue;
+    info.appendChild(resTag);
+  }
 
   row.appendChild(time);row.appendChild(info);row.appendChild(status);
   row.addEventListener('click',()=>openLineupEditor(r));
@@ -2178,6 +2227,50 @@ function openLineupEditor(race){
     lineupsRef.doc(id).set({notes:notes.value,raceId:id,race:race.title,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
   });
   body.appendChild(notesLbl);body.appendChild(notes);
+
+  // Result logger section
+  const raceNumMatch=race.title.match(/Race\s+(#[\d\/\-]+)/);
+  const raceNum=raceNumMatch?raceNumMatch[1]:null;
+  if(raceNum){
+    const resBox=document.createElement('div');resBox.className='le-result-box';
+    const resTitle=document.createElement('div');resTitle.className='le-result-title';resTitle.textContent='\u{1F3C6} Race Result';
+    resBox.appendChild(resTitle);
+    const existingResult=window.currentResults?window.currentResults[raceNum]:null;
+    if(existingResult){
+      const cur=document.createElement('div');cur.className='le-result-current';
+      cur.textContent='\u2705 Finished: '+existingResult;
+      resBox.appendChild(cur);
+    }
+    const resRow=document.createElement('div');resRow.className='le-result-row';
+    const resSel=document.createElement('select');
+    ['--','1st','2nd','3rd','4th','5th','6th','7th','8th','DNS','DNF'].forEach(v=>{
+      const o=document.createElement('option');o.value=v;o.textContent=v;
+      if(v===existingResult)o.selected=true;
+      resSel.appendChild(o);
+    });
+    const saveRes=document.createElement('button');saveRes.className='le-result-save';
+    saveRes.textContent=existingResult?'Update':'Save';
+    saveRes.addEventListener('click',()=>{
+      if(resSel.value==='--')return;
+      const docId=raceNum.replace(/[/#]/g,'_');
+      db.collection('results').doc(docId).set({
+        race:raceNum,result:resSel.value,
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true}).then(()=>showToast('Result saved & synced!'));
+    });
+    resRow.appendChild(resSel);resRow.appendChild(saveRes);
+    if(existingResult){
+      const clrRes=document.createElement('button');clrRes.className='le-result-clear';
+      clrRes.textContent='Clear';
+      clrRes.addEventListener('click',()=>{
+        const docId=raceNum.replace(/[/#]/g,'_');
+        db.collection('results').doc(docId).delete().then(()=>{showToast('Result cleared');overlay.remove();});
+      });
+      resRow.appendChild(clrRes);
+    }
+    resBox.appendChild(resRow);
+    body.appendChild(resBox);
+  }
 
   sheet.appendChild(header);sheet.appendChild(body);
   overlay.appendChild(sheet);
