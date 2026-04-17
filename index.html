@@ -2326,6 +2326,17 @@ function openLineupEditor(race){
 
   const boat=document.createElement('div');boat.className='le-boat';
 
+  // Helper to update a seat element in-place after picking
+  function updateSeatElement(seatEl,name){
+    seatEl.classList.remove('filled','conflict');
+    if(name){
+      seatEl.classList.add('filled');
+      seatEl.textContent=name;
+    }else{
+      seatEl.textContent='\uFF0B';
+    }
+  }
+
   // Drummer (front of boat - above seat 1)
   const drumWrap=document.createElement('div');drumWrap.className='le-special le-special-top';
   const drumLbl=document.createElement('div');drumLbl.className='le-special-lbl';drumLbl.textContent='Drummer';
@@ -2333,7 +2344,9 @@ function openLineupEditor(race){
   if(existing.drummer){drumSeat.classList.add('filled');drumSeat.textContent=existing.drummer;if(conflicts.includes(existing.drummer))drumSeat.classList.add('conflict');}
   else drumSeat.textContent='\uFF0B';
   drumSeat.addEventListener('click',()=>pickPaddler(race,'drummer',existing.drummer,chosen=>{
-    saveLineupSeat(id,'drummer',chosen,existing);overlay.remove();setTimeout(()=>openLineupEditor(race),50);
+    saveLineupSeat(id,'drummer',chosen,existing);
+    existing.drummer=chosen;
+    updateSeatElement(drumSeat,chosen);
   }));
   drumWrap.appendChild(drumLbl);drumWrap.appendChild(drumSeat);
   boat.appendChild(drumWrap);
@@ -2358,9 +2371,11 @@ function openLineupEditor(race){
       }else{
         seat.textContent='\uFF0B';
       }
-      seat.addEventListener('click',()=>pickPaddler(race,key,name,(chosen)=>{
+      seat.addEventListener('click',()=>pickPaddler(race,key,existing.seats[key]||'',(chosen)=>{
         saveLineupSeat(id,key,chosen,existing);
-        overlay.remove();setTimeout(()=>openLineupEditor(race),50);
+        if(!existing.seats)existing.seats={};
+        if(chosen)existing.seats[key]=chosen;else delete existing.seats[key];
+        updateSeatElement(seat,chosen);
       }));
       r.appendChild(seat);
     });
@@ -2374,7 +2389,9 @@ function openLineupEditor(race){
   if(existing.sweep){swSeat.classList.add('filled');swSeat.textContent=existing.sweep;if(conflicts.includes(existing.sweep))swSeat.classList.add('conflict');}
   else swSeat.textContent='\uFF0B';
   swSeat.addEventListener('click',()=>pickPaddler(race,'sweep',existing.sweep,chosen=>{
-    saveLineupSeat(id,'sweep',chosen,existing);overlay.remove();setTimeout(()=>openLineupEditor(race),50);
+    saveLineupSeat(id,'sweep',chosen,existing);
+    existing.sweep=chosen;
+    updateSeatElement(swSeat,chosen);
   }));
   swWrap.appendChild(swLbl);swWrap.appendChild(swSeat);
   boat.appendChild(swWrap);
