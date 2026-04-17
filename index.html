@@ -2055,8 +2055,8 @@ function renderRaceRow(r,now){
   status.className='rd-status';
   if(isLive){status.classList.add('live');status.textContent='LIVE';}
   else if(isNext){status.classList.add('next');status.textContent='NEXT';}
-  else if(total===12){status.classList.add('full');status.textContent='12/12';}
-  else if(total>0){status.classList.add('partial');status.textContent=total+'/12';}
+  else if(total===22){status.classList.add('full');status.textContent='22/22';}
+  else if(total>0){status.classList.add('partial');status.textContent=total+'/22';}
   else{status.classList.add('empty');status.textContent='not set';}
 
   row.appendChild(time);row.appendChild(info);row.appendChild(status);
@@ -2113,7 +2113,7 @@ function openLineupEditor(race){
   labels.innerHTML='<span>&nbsp;</span><span>LEFT</span><span>RIGHT</span>';
   boat.appendChild(labels);
 
-  for(let i=1;i<=5;i++){
+  for(let i=1;i<=10;i++){
     const r=document.createElement('div');r.className='le-row';
     const rn=document.createElement('div');rn.className='le-row-num';rn.textContent=i;
     r.appendChild(rn);
@@ -2282,7 +2282,7 @@ function renderYourNextRace(){
     const start=new Date(r.d+'T'+r.t+':00+10:00');
     if(start<now)return null;
     let seat='';
-    Object.entries(l.seats||{}).forEach(([k,v])=>{if(v===myPaddler)seat='Seat '+k.slice(0,1)+' '+(k.endsWith('L')?'Left':'Right');});
+    Object.entries(l.seats||{}).forEach(([k,v])=>{if(v===myPaddler)seat='Seat '+k.slice(0,-1)+' '+(k.endsWith('L')?'Left':'Right');});
     if(l.drummer===myPaddler)seat='Drummer';
     if(l.sweep===myPaddler)seat='Sweep';
     return {race:r,start,seat,lineup:l};
