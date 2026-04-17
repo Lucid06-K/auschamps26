@@ -823,9 +823,9 @@ body{
 }
 .le-seat{
   background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r3);
-  padding:12px 10px;text-align:center;cursor:pointer;transition:all .15s;
-  min-height:44px;display:flex;align-items:center;justify-content:center;
-  font-size:.82rem;font-weight:600;color:var(--text3);
+  padding:10px;text-align:center;cursor:pointer;transition:all .15s;
+  min-height:44px;display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:.82rem;font-weight:600;color:var(--text3);position:relative;
   -webkit-tap-highlight-color:transparent;word-break:break-word;
 }
 .le-seat.filled{
@@ -837,6 +837,15 @@ body{
   color:var(--red);
 }
 .le-seat:active{transform:scale(.97)}
+.le-seat-x{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(239,68,68,.15);color:var(--red);
+  font-size:.9rem;font-weight:700;line-height:1;flex-shrink:0;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:all .12s;
+}
+.le-seat-x:active{background:rgba(239,68,68,.35);transform:scale(.88)}
 .le-special{
   display:grid;grid-template-columns:80px 1fr;gap:10px;
   align-items:center;margin-top:8px;padding-top:12px;
@@ -2543,26 +2552,45 @@ function openLineupEditor(race){
   const boat=document.createElement('div');boat.className='le-boat';
 
   // Helper to update a seat element in-place after picking
-  function updateSeatElement(seatEl,name){
+  function renderSeatContent(seatEl,name,onClear,isConflict){
+    seatEl.textContent='';
     seatEl.classList.remove('filled','conflict');
     if(name){
       seatEl.classList.add('filled');
-      seatEl.textContent=name;
+      if(isConflict)seatEl.classList.add('conflict');
+      const nameSpan=document.createElement('span');
+      nameSpan.textContent=name;
+      nameSpan.style.cssText='flex:1;min-width:0;text-align:center';
+      seatEl.appendChild(nameSpan);
+      const x=document.createElement('span');
+      x.className='le-seat-x';
+      x.textContent='\u00D7';
+      x.setAttribute('role','button');
+      x.setAttribute('aria-label','Remove paddler');
+      x.addEventListener('click',e=>{e.stopPropagation();onClear();});
+      seatEl.appendChild(x);
     }else{
       seatEl.textContent='\uFF0B';
     }
+  }
+  function updateSeatElement(seatEl,name,onClear){
+    renderSeatContent(seatEl,name,onClear,false);
   }
 
   // Drummer (front of boat - above seat 1)
   const drumWrap=document.createElement('div');drumWrap.className='le-special le-special-top';
   const drumLbl=document.createElement('div');drumLbl.className='le-special-lbl';drumLbl.textContent='Drummer';
   const drumSeat=document.createElement('div');drumSeat.className='le-seat';
-  if(existing.drummer){drumSeat.classList.add('filled');drumSeat.textContent=existing.drummer;if(conflicts.includes(existing.drummer))drumSeat.classList.add('conflict');}
-  else drumSeat.textContent='\uFF0B';
+  const clearDrum=()=>{
+    saveLineupSeat(id,'drummer','',existing);
+    existing.drummer='';
+    renderSeatContent(drumSeat,'',clearDrum,false);
+  };
+  renderSeatContent(drumSeat,existing.drummer||'',clearDrum,conflicts.includes(existing.drummer));
   drumSeat.addEventListener('click',()=>pickPaddler(race,'drummer',existing.drummer,chosen=>{
     saveLineupSeat(id,'drummer',chosen,existing);
     existing.drummer=chosen;
-    updateSeatElement(drumSeat,chosen);
+    renderSeatContent(drumSeat,chosen,clearDrum,false);
   }));
   drumWrap.appendChild(drumLbl);drumWrap.appendChild(drumSeat);
   boat.appendChild(drumWrap);
@@ -2579,19 +2607,18 @@ function openLineupEditor(race){
       const key=i+side;
       const seat=document.createElement('div');
       seat.className='le-seat';
+      const clearSeat=()=>{
+        saveLineupSeat(id,key,'',existing);
+        if(existing.seats)delete existing.seats[key];
+        renderSeatContent(seat,'',clearSeat,false);
+      };
       const name=existing.seats[key]||'';
-      if(name){
-        seat.classList.add('filled');
-        seat.textContent=name;
-        if(conflicts.includes(name))seat.classList.add('conflict');
-      }else{
-        seat.textContent='\uFF0B';
-      }
+      renderSeatContent(seat,name,clearSeat,conflicts.includes(name));
       seat.addEventListener('click',()=>pickPaddler(race,key,existing.seats[key]||'',(chosen)=>{
         saveLineupSeat(id,key,chosen,existing);
         if(!existing.seats)existing.seats={};
         if(chosen)existing.seats[key]=chosen;else delete existing.seats[key];
-        updateSeatElement(seat,chosen);
+        renderSeatContent(seat,chosen,clearSeat,false);
       }));
       r.appendChild(seat);
     });
@@ -2602,12 +2629,16 @@ function openLineupEditor(race){
   const swWrap=document.createElement('div');swWrap.className='le-special';
   const swLbl=document.createElement('div');swLbl.className='le-special-lbl';swLbl.textContent='Sweep';
   const swSeat=document.createElement('div');swSeat.className='le-seat';
-  if(existing.sweep){swSeat.classList.add('filled');swSeat.textContent=existing.sweep;if(conflicts.includes(existing.sweep))swSeat.classList.add('conflict');}
-  else swSeat.textContent='\uFF0B';
+  const clearSweep=()=>{
+    saveLineupSeat(id,'sweep','',existing);
+    existing.sweep='';
+    renderSeatContent(swSeat,'',clearSweep,false);
+  };
+  renderSeatContent(swSeat,existing.sweep||'',clearSweep,conflicts.includes(existing.sweep));
   swSeat.addEventListener('click',()=>pickPaddler(race,'sweep',existing.sweep,chosen=>{
     saveLineupSeat(id,'sweep',chosen,existing);
     existing.sweep=chosen;
-    updateSeatElement(swSeat,chosen);
+    renderSeatContent(swSeat,chosen,clearSweep,false);
   }));
   swWrap.appendChild(swLbl);swWrap.appendChild(swSeat);
   boat.appendChild(swWrap);
