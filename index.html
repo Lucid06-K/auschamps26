@@ -539,6 +539,23 @@ body{
   -webkit-tap-highlight-color:transparent;
 }
 .rd-filter.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.rd-filter-mine{
+  background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(245,158,11,.05));
+  border-color:var(--gold-border);color:var(--gold);
+  display:inline-flex;align-items:center;gap:6px;
+  font-weight:700;
+}
+.rd-filter-mine:not(.active){animation:mineGlow 3s ease-in-out infinite}
+@keyframes mineGlow{
+  0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}
+  50%{box-shadow:0 0 0 3px rgba(245,158,11,.15)}
+}
+.rd-filter-mine.active{
+  background:linear-gradient(135deg,var(--gold),#d97706);
+  color:#000;border-color:var(--gold);
+  box-shadow:0 2px 12px rgba(245,158,11,.3);
+  animation:none;
+}
 .rd-roster-btn{
   background:var(--bg2);border:1px solid var(--border);color:var(--text);
   padding:8px 12px;border-radius:var(--r3);cursor:pointer;font-family:inherit;
@@ -1093,7 +1110,10 @@ body{
       <div class="rd-filters" id="rdFilters">
         <button class="rd-filter active" data-filter="all">All</button>
         <button class="rd-filter" data-filter="today">Today</button>
-        <button class="rd-filter" data-filter="mine">My Races</button>
+        <button class="rd-filter rd-filter-mine" data-filter="mine">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          My Races
+        </button>
       </div>
       <button class="rd-roster-btn" data-goto="paddlers">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
