@@ -821,15 +821,18 @@ body{
   font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:16px;
 }
 
-/* Home rooms collapsible */
-.rooms-toggle{
-  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
-  padding:14px 18px;width:100%;display:flex;align-items:center;gap:14px;
-  cursor:pointer;color:var(--text);font-family:inherit;text-align:left;
-  margin-bottom:12px;
+/* Home rooms button */
+.rooms-btn{
+  background:linear-gradient(135deg,var(--bg3),var(--bg2));
+  border:1px solid var(--border2);border-radius:var(--r2);
+  padding:14px 18px;width:100%;display:flex;align-items:center;gap:10px;
+  cursor:pointer;color:var(--text);font-family:inherit;
+  font-size:.88rem;font-weight:700;letter-spacing:.01em;
+  margin-bottom:12px;transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
 }
-.rooms-toggle svg{width:16px;height:16px;margin-left:auto;transition:transform .2s}
-.rooms-toggle.open svg{transform:rotate(180deg)}
+.rooms-btn:active{transform:scale(.98);background:var(--bg3)}
+.rooms-btn.open .rooms-btn-chev{transform:rotate(180deg)}
 .rooms-body{display:none;padding:0 0 16px}
 .rooms-body.open{display:block}
 
@@ -920,13 +923,10 @@ body{
         </div>
       </div>
       <div id="wx-days" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:-4px;margin-bottom:12px"></div>
-      <button class="rooms-toggle" id="roomsToggle">
-        <span style="font-size:1.1rem">&#x1F3E8;</span>
-        <div style="flex:1">
-          <div style="font-size:.88rem;font-weight:700">Pelican Waters Golf Resort</div>
-          <div style="font-size:.72rem;color:var(--text2)">26 members &middot; 7 rooms &middot; tap to expand</div>
-        </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      <button class="rooms-btn" id="roomsToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M3 7v11a2 2 0 002 2h14a2 2 0 002-2V7"/><path d="M21 7L12 2 3 7"/><path d="M9 22V12h6v10"/></svg>
+        <span>Bedroom Assignments</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;margin-left:auto;transition:transform .2s" class="rooms-btn-chev"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="rooms-body" id="roomsBody"></div>
     </div>
