@@ -890,6 +890,76 @@ body{
 .rooms-body{display:none;padding:0 0 16px}
 .rooms-body.open{display:block}
 
+/* Tutorial button */
+.tut-btn{
+  width:100%;display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,rgba(167,139,250,.12),rgba(167,139,250,.04));
+  border:1px solid rgba(167,139,250,.3);border-radius:var(--r2);
+  padding:12px 16px;margin-bottom:16px;
+  color:var(--purple);font-size:.85rem;font-weight:700;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.tut-btn:active{transform:scale(.98);background:rgba(167,139,250,.15)}
+.tut-btn svg{width:18px;height:18px;flex-shrink:0}
+
+/* Tutorial overlay */
+.tut-overlay{
+  position:fixed;inset:0;z-index:9000;pointer-events:auto;
+  animation:toastIn .2s ease;
+}
+.tut-backdrop{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.75);
+  transition:clip-path .3s ease;
+}
+.tut-tooltip{
+  position:absolute;background:var(--bg2);
+  border:1px solid var(--purple);border-radius:var(--r);
+  padding:16px 18px;max-width:320px;width:calc(100% - 40px);
+  box-shadow:0 8px 32px rgba(0,0,0,.5),0 0 0 4px rgba(167,139,250,.15);
+  z-index:9001;
+}
+.tut-arrow{
+  position:absolute;width:12px;height:12px;background:var(--bg2);
+  border:1px solid var(--purple);transform:rotate(45deg);
+  border-right:none;border-bottom:none;
+}
+.tut-arrow.bottom{
+  border:1px solid var(--purple);border-left:none;border-top:none;
+}
+.tut-step{
+  font-size:.65rem;font-weight:700;color:var(--purple);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;
+}
+.tut-title{font-size:1rem;font-weight:800;margin-bottom:6px}
+.tut-desc{font-size:.82rem;color:var(--text2);line-height:1.5;margin-bottom:14px}
+.tut-actions{display:flex;gap:8px;justify-content:space-between;align-items:center}
+.tut-skip{
+  background:none;border:none;color:var(--text3);font-size:.78rem;
+  font-weight:600;cursor:pointer;padding:8px 4px;font-family:inherit;
+}
+.tut-skip:active{color:var(--text)}
+.tut-nav{display:flex;gap:8px}
+.tut-btn-sm{
+  background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:8px 14px;border-radius:var(--r3);font-size:.78rem;font-weight:600;
+  cursor:pointer;font-family:inherit;
+}
+.tut-btn-sm:disabled{opacity:.3;cursor:not-allowed}
+.tut-btn-primary{background:var(--purple);border-color:var(--purple);color:#fff}
+.tut-btn-primary:active{transform:scale(.97)}
+.tut-highlight{
+  position:relative;z-index:9000;
+  box-shadow:0 0 0 4px rgba(167,139,250,.4),0 0 0 8px rgba(167,139,250,.15);
+  border-radius:var(--r3);
+  animation:tutPulse 1.5s ease-in-out infinite;
+}
+@keyframes tutPulse{
+  0%,100%{box-shadow:0 0 0 4px rgba(167,139,250,.4),0 0 0 8px rgba(167,139,250,.15)}
+  50%{box-shadow:0 0 0 4px rgba(167,139,250,.6),0 0 0 12px rgba(167,139,250,.1)}
+}
+
 /* ---- Confetti ---- */
 .confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:9999}
 .confetti-p{
@@ -961,6 +1031,12 @@ body{
         Add to Cal
       </button>
     </div>
+
+    <button class="tut-btn" id="tutBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span>Take a tour of the app</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-left:auto"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
 
     <div class="results-board" id="home-results" style="margin-bottom:16px">
       <h3>&#x1F3C6; Race Results</h3>
@@ -2600,6 +2676,198 @@ renderPaddlers();renderRaceDay();renderYourNextRace();
     body.classList.toggle('open');
   });
 })();
+
+// ======== TUTORIAL ========
+const TUTORIAL_STEPS=[
+  {
+    page:'home',selector:null,
+    title:'Welcome to the MUDBC AusChamps app \u{1F409}',
+    desc:"Let's take a quick tour of everything you can do here. Tap Next to continue, or Skip anytime."
+  },
+  {
+    page:'home',selector:'#ynr-container',
+    title:'Your Next Race',
+    desc:"Pick your name to see the next race you're in, your seat, and a live countdown to start."
+  },
+  {
+    page:'home',selector:'#live-tracker',
+    title:'Live Event Tracker',
+    desc:"Shows what's happening right now and what's coming up. Auto-updates every 30 seconds."
+  },
+  {
+    page:'home',selector:'.hero-race-btn',
+    title:'Quick Access to Schedule',
+    desc:'Big blue button jumps straight to the full race schedule.'
+  },
+  {
+    page:'home',selector:'#shareBtn',
+    title:'Share with Teammates',
+    desc:'Send this app to anyone in the team with one tap.'
+  },
+  {
+    page:'home',selector:'#calBtn',
+    title:'Add Races to Your Calendar',
+    desc:'Export all races as a .ics file or add them to Google Calendar with reminders.'
+  },
+  {
+    page:'home',selector:'#roomsToggle',
+    title:'Bedroom Assignments',
+    desc:'Tap to expand and see who is staying in which room at Pelican Waters.'
+  },
+  {
+    page:'schedule',selector:'.day-pills',
+    title:'Race Schedule',
+    desc:'Four days of racing. Current day auto-selects. Scroll pills horizontally to switch days.'
+  },
+  {
+    page:'schedule',selector:'.ev-card.racing',waitForDay:'d2',
+    title:'Expand Race Lists',
+    desc:'Tap "View races" to see all races for that day with times, lanes, and categories.'
+  },
+  {
+    page:'raceday',selector:'.rd-filter-mine',
+    title:'My Races Filter',
+    desc:"After picking your name on Home, tap this to see only races you're in."
+  },
+  {
+    page:'raceday',selector:'.rd-race',
+    title:'Tap Any Race',
+    desc:'Opens the Lineup Editor where you can assign paddlers to seats, add notes, and log results.'
+  },
+  {
+    page:'raceday',selector:'.rd-roster-btn',
+    title:'Manage Roster',
+    desc:'Add or remove paddlers from the team. Syncs to everyone in real-time.'
+  },
+  {
+    page:'packing',selector:'.pack-bar',
+    title:'Packing Checklist',
+    desc:'Tap items to tick them off. Progress saves automatically. Confetti at 100%!'
+  },
+  {
+    page:'contacts',selector:'.call-btn',
+    title:'Emergency Contacts',
+    desc:'Tap any green phone icon to call a committee member or coach instantly.'
+  },
+  {
+    page:'home',selector:null,
+    title:"You're all set! \u{1F680}",
+    desc:"Results and lineups sync in real-time across every device. Tap this tutorial button anytime to see it again. Good luck racing!"
+  }
+];
+
+let tutStep=0;
+let tutOverlay=null;
+let tutPrevHighlight=null;
+
+document.getElementById('tutBtn').addEventListener('click',()=>{tutStep=0;runTutorial();});
+
+function runTutorial(){
+  if(tutStep>=TUTORIAL_STEPS.length){endTutorial();return;}
+  const step=TUTORIAL_STEPS[tutStep];
+  // Navigate to the right page
+  if(step.page)goTo(step.page);
+  // If this step requires a specific day tab
+  if(step.waitForDay){
+    document.querySelectorAll('.day-pill').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.day-content').forEach(c=>c.hidden=true);
+    const pill=document.querySelector('[data-day="'+step.waitForDay+'"]');
+    if(pill)pill.classList.add('active');
+    const content=document.getElementById(step.waitForDay);
+    if(content)content.hidden=false;
+  }
+  // Brief delay to let page transition complete
+  setTimeout(()=>showTutorialStep(step),150);
+}
+
+function showTutorialStep(step){
+  // Clean previous highlight
+  if(tutPrevHighlight){tutPrevHighlight.classList.remove('tut-highlight');tutPrevHighlight=null;}
+  // Remove old overlay
+  if(tutOverlay){tutOverlay.remove();tutOverlay=null;}
+
+  const overlay=document.createElement('div');
+  overlay.className='tut-overlay';
+  const backdrop=document.createElement('div');
+  backdrop.className='tut-backdrop';
+  overlay.appendChild(backdrop);
+
+  const tooltip=document.createElement('div');
+  tooltip.className='tut-tooltip';
+  const stepNum=document.createElement('div');stepNum.className='tut-step';
+  stepNum.textContent='Step '+(tutStep+1)+' of '+TUTORIAL_STEPS.length;
+  const title=document.createElement('div');title.className='tut-title';title.textContent=step.title;
+  const desc=document.createElement('div');desc.className='tut-desc';desc.textContent=step.desc;
+  const actions=document.createElement('div');actions.className='tut-actions';
+  const skip=document.createElement('button');skip.className='tut-skip';skip.textContent='Skip tour';
+  skip.addEventListener('click',endTutorial);
+  const nav=document.createElement('div');nav.className='tut-nav';
+  const back=document.createElement('button');back.className='tut-btn-sm';back.textContent='Back';
+  back.disabled=tutStep===0;
+  back.addEventListener('click',()=>{tutStep--;runTutorial();});
+  const next=document.createElement('button');next.className='tut-btn-sm tut-btn-primary';
+  next.textContent=tutStep===TUTORIAL_STEPS.length-1?'Finish':'Next';
+  next.addEventListener('click',()=>{tutStep++;runTutorial();});
+  nav.appendChild(back);nav.appendChild(next);
+  actions.appendChild(skip);actions.appendChild(nav);
+  tooltip.appendChild(stepNum);tooltip.appendChild(title);tooltip.appendChild(desc);tooltip.appendChild(actions);
+  overlay.appendChild(tooltip);
+  document.body.appendChild(overlay);
+  tutOverlay=overlay;
+
+  // Position tooltip + highlight
+  if(step.selector){
+    const target=document.querySelector(step.selector);
+    if(target){
+      target.classList.add('tut-highlight');
+      tutPrevHighlight=target;
+      target.scrollIntoView({behavior:'smooth',block:'center'});
+      setTimeout(()=>positionTooltip(tooltip,target),350);
+    }else{
+      // Target not found - center tooltip
+      centerTooltip(tooltip);
+    }
+  }else{
+    centerTooltip(tooltip);
+  }
+}
+
+function positionTooltip(tooltip,target){
+  const rect=target.getBoundingClientRect();
+  const tRect=tooltip.getBoundingClientRect();
+  const viewportH=window.innerHeight;
+  const viewportW=window.innerWidth;
+  let top,left;
+  // Try to place below
+  if(rect.bottom+tRect.height+20<viewportH-80){
+    top=rect.bottom+14;
+  }else if(rect.top-tRect.height-20>80){
+    // Place above
+    top=rect.top-tRect.height-14;
+  }else{
+    // Place at center vertically
+    top=Math.max(20,(viewportH-tRect.height)/2);
+  }
+  // Horizontal centering
+  left=Math.max(20,Math.min(viewportW-tRect.width-20,rect.left+(rect.width/2)-(tRect.width/2)));
+  tooltip.style.top=top+'px';
+  tooltip.style.left=left+'px';
+}
+
+function centerTooltip(tooltip){
+  tooltip.style.top='50%';tooltip.style.left='50%';
+  tooltip.style.transform='translate(-50%,-50%)';
+}
+
+function endTutorial(){
+  if(tutPrevHighlight){tutPrevHighlight.classList.remove('tut-highlight');tutPrevHighlight=null;}
+  if(tutOverlay){tutOverlay.remove();tutOverlay=null;}
+  tutStep=0;
+  goTo('home');
+}
+
+// Allow escape to close
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&tutOverlay)endTutorial();});
 
 // PWA - register service worker and manifest
 if('serviceWorker' in navigator){
