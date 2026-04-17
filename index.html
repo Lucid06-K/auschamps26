@@ -960,8 +960,8 @@ body{
 }
 .ynr-lineup-btn{
   background:none;border:1px solid var(--border);color:var(--text);
-  padding:8px 14px;border-radius:var(--r3);font-size:.78rem;font-weight:600;
-  cursor:pointer;font-family:inherit;width:100%;
+  padding:8px 12px;border-radius:var(--r3);font-size:.78rem;font-weight:600;
+  cursor:pointer;font-family:inherit;white-space:nowrap;min-width:0;
 }
 .ynr-pick-btn{
   display:flex;align-items:center;justify-content:center;gap:8px;
@@ -1301,18 +1301,15 @@ body{
           <div class="ev-title">500m Racing &amp; 1km Turn (State vs State)</div>
           <div class="ev-loc">&#x1F3C1; Junior, 24U, Prem Mixed/Open/Women</div>
           <span class="ev-tag racing">Racing</span>
-          <button class="expand-btn" data-target="races-d4">View 22 races <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
+          <button class="expand-btn" data-target="races-d4">View 19 races <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
           <div class="expand-body" id="races-d4">
             <div class="race-list">
               <div style="font-size:.75rem;color:var(--text2);padding:8px 0 4px;font-weight:700">Tap a race to log result</div>
               <div class="race-header"><div>Race</div><div>Time</div><div>Lane</div><div>Category</div></div>
-              <div class="race-row"><div class="rr-num">#2</div><div class="rr-time">8:08am</div><div class="rr-lane">2</div><div class="rr-cat"><span class="race-badge2 rb-round">R1</span> Junior Mixed</div></div>
               <div class="race-row"><div class="rr-num">#4</div><div class="rr-time">8:24am</div><div class="rr-lane">2</div><div class="rr-cat"><span class="race-badge2 rb-round">R1</span> 24U Mixed</div></div>
               <div class="race-row"><div class="rr-num">#7</div><div class="rr-time">8:48am</div><div class="rr-lane">4/6</div><div class="rr-cat"><span class="race-badge2 rb-round">R1</span> Prem Mixed</div></div>
-              <div class="race-row"><div class="rr-num">#10</div><div class="rr-time">9:12am</div><div class="rr-lane">4</div><div class="rr-cat"><span class="race-badge2 rb-round">R2</span> Junior Mixed</div></div>
               <div class="race-row"><div class="rr-num">#12</div><div class="rr-time">9:28am</div><div class="rr-lane">5</div><div class="rr-cat"><span class="race-badge2 rb-round">R2</span> 24U Mixed</div></div>
               <div class="race-row"><div class="rr-num">#15</div><div class="rr-time">9:52am</div><div class="rr-lane">1/4</div><div class="rr-cat"><span class="race-badge2 rb-round">R2</span> Prem Mixed</div></div>
-              <div class="race-row"><div class="rr-num">#18</div><div class="rr-time">10:16am</div><div class="rr-lane">5</div><div class="rr-cat"><span class="race-badge2 rb-round">R3</span> Junior Mixed</div></div>
               <div class="race-row"><div class="rr-num">#20</div><div class="rr-time">10:32am</div><div class="rr-lane">4</div><div class="rr-cat"><span class="race-badge2 rb-round">R3</span> 24U Mixed</div></div>
               <div class="race-row"><div class="rr-num">#23</div><div class="rr-time">10:56am</div><div class="rr-lane">2/5</div><div class="rr-cat"><span class="race-badge2 rb-round">R3</span> Prem Mixed</div></div>
               <div class="race-row"><div class="rr-num">#30</div><div class="rr-time">11:55am</div><div class="rr-lane">4</div><div class="rr-cat"><span class="race-badge2 rb-round">R1</span> Junior Open</div></div>
@@ -1358,10 +1355,6 @@ body{
       <div class="rd-filters" id="rdFilters">
         <button class="rd-filter active" data-filter="all">All</button>
         <button class="rd-filter" data-filter="today">Today</button>
-        <button class="rd-filter rd-filter-mine" data-filter="mine">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          My Races
-        </button>
       </div>
       <button class="rd-roster-btn" data-goto="paddlers">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
@@ -1739,13 +1732,10 @@ function confetti(){
     // Day 4 - Mon 20 Apr
     {d:'2026-04-20',t:'06:30',end:'07:00',title:'Check Out & Depart',loc:'Pelican Waters Golf Resort',type:'travel'},
     {d:'2026-04-20',t:'07:00',end:'07:30',title:'State Flag Bearer Ceremony',loc:'Lake Kawana',type:'ceremony'},
-    {d:'2026-04-20',t:'08:08',end:'08:16',title:'Race #2 - Junior Mixed R1',loc:'Lake Kawana, Lane 2',type:'race'},
     {d:'2026-04-20',t:'08:24',end:'08:32',title:'Race #4 - 24U Mixed R1',loc:'Lake Kawana, Lane 2',type:'race'},
     {d:'2026-04-20',t:'08:48',end:'08:56',title:'Race #7 - Prem Mixed R1',loc:'Lake Kawana, Lane 4/6',type:'race'},
-    {d:'2026-04-20',t:'09:12',end:'09:20',title:'Race #10 - Junior Mixed R2',loc:'Lake Kawana, Lane 4',type:'race'},
     {d:'2026-04-20',t:'09:28',end:'09:36',title:'Race #12 - 24U Mixed R2',loc:'Lake Kawana, Lane 5',type:'race'},
     {d:'2026-04-20',t:'09:52',end:'10:00',title:'Race #15 - Prem Mixed R2',loc:'Lake Kawana, Lane 1/4',type:'race'},
-    {d:'2026-04-20',t:'10:16',end:'10:24',title:'Race #18 - Junior Mixed R3',loc:'Lake Kawana, Lane 5',type:'race'},
     {d:'2026-04-20',t:'10:32',end:'10:40',title:'Race #20 - 24U Mixed R3',loc:'Lake Kawana, Lane 4',type:'race'},
     {d:'2026-04-20',t:'10:56',end:'11:04',title:'Race #23 - Prem Mixed R3',loc:'Lake Kawana, Lane 2/5',type:'race'},
     {d:'2026-04-20',t:'11:55',end:'12:03',title:'Race #30 - Junior Open R1',loc:'Lake Kawana, Lane 4',type:'race'},
@@ -1835,7 +1825,7 @@ function confetti(){
     }
 
     // Show next 2 upcoming
-    const nextEvents=upcoming.slice(0,2);
+    const nextEvents=upcoming.slice(0,1);
     if(nextEvents.length){
       out+='<div class="live-label" style="margin-top:12px">Up Next</div>';
       for(const ne of nextEvents){
@@ -1964,10 +1954,8 @@ const ALLRACES=[];
     {d:'2026-04-19',t:'14:44',end:'14:52',title:'Race #62 - Uni vs Uni 500m GF',loc:'Lake Kawana'},
     {d:'2026-04-19',t:'16:05',end:'16:30',title:'Race #65/66 - Mixed 10s 2km Turn',loc:'Lake Kawana'},
     {d:'2026-04-20',t:'07:00',end:'07:30',title:'State Flag Bearer Ceremony',loc:'Lake Kawana'},
-    {d:'2026-04-20',t:'08:08',end:'08:16',title:'Race #2 - Junior Mixed R1',loc:'Lake Kawana'},
     {d:'2026-04-20',t:'08:24',end:'08:32',title:'Race #4 - 24U Mixed R1',loc:'Lake Kawana'},
     {d:'2026-04-20',t:'08:48',end:'08:56',title:'Race #7 - Prem Mixed R1',loc:'Lake Kawana'},
-    {d:'2026-04-20',t:'09:12',end:'09:20',title:'Race #10 - Junior Mixed R2',loc:'Lake Kawana'},
     {d:'2026-04-20',t:'09:28',end:'09:36',title:'Race #12 - 24U Mixed R2',loc:'Lake Kawana'},
     {d:'2026-04-20',t:'09:52',end:'10:00',title:'Race #15 - Prem Mixed R2',loc:'Lake Kawana'},
     {d:'2026-04-20',t:'15:20',end:'15:35',title:'Race #54 - 24U Mixed 1km Turn',loc:'Lake Kawana'},
@@ -2444,6 +2432,66 @@ document.querySelectorAll('.rd-filter').forEach(btn=>{
 });
 
 // ======== LINEUP EDITOR ========
+// Read-only lineup viewer (for paddlers via Your Next Race)
+function openLineupViewer(race,lineup){
+  const overlay=document.createElement('div');overlay.className='le-overlay';
+  const sheet=document.createElement('div');sheet.className='le-sheet';
+  const header=document.createElement('div');header.className='le-header';
+  const close=document.createElement('button');close.className='le-close';close.textContent='\u00D7';close.setAttribute('aria-label','Close');
+  close.addEventListener('click',()=>overlay.remove());
+  const titleDiv=document.createElement('div');titleDiv.className='le-title';
+  const h=document.createElement('h3');h.textContent=race.title;
+  const p=document.createElement('p');
+  const tSplit=race.t.split(':');let hh=parseInt(tSplit[0]);const mm=tSplit[1];const ap=hh>=12?'pm':'am';hh=hh%12||12;
+  const dayLbl={'2026-04-17':'Fri 17','2026-04-18':'Sat 18','2026-04-19':'Sun 19','2026-04-20':'Mon 20'}[race.d]||race.d;
+  p.textContent=dayLbl+' \u00B7 '+hh+':'+mm+ap+' \u00B7 '+race.loc;
+  titleDiv.appendChild(h);titleDiv.appendChild(p);
+  header.appendChild(close);header.appendChild(titleDiv);
+  const body=document.createElement('div');body.className='le-body';
+  const note=document.createElement('div');
+  note.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:10px 14px;font-size:.78rem;color:var(--text2);margin-bottom:14px;line-height:1.5';
+  note.innerHTML='\u{1F441}\u{FE0F} View-only. Only coaches can edit lineups in Race Management.';
+  body.appendChild(note);
+  const boat=document.createElement('div');boat.className='mr-boat-mini';boat.style.background='var(--bg2)';boat.style.border='1px solid var(--border)';boat.style.padding='16px';
+  const drumTop=document.createElement('div');drumTop.style.cssText='text-align:center;padding:10px;margin-bottom:12px;border-bottom:1px solid var(--border)';
+  const drumLbl=document.createElement('div');drumLbl.style.cssText='font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px';drumLbl.textContent='Drummer';
+  const drumVal=document.createElement('div');drumVal.style.cssText='font-size:.88rem;font-weight:600';
+  drumVal.textContent=lineup.drummer||'\u2014';
+  if(lineup.drummer===myPaddler)drumVal.style.color='var(--blue)';
+  drumTop.appendChild(drumLbl);drumTop.appendChild(drumVal);
+  boat.appendChild(drumTop);
+  for(let i=1;i<=10;i++){
+    const row=document.createElement('div');row.className='mr-seat-row';row.style.margin='4px 0';
+    const num=document.createElement('span');num.textContent=i;
+    const L=document.createElement('div');L.className='mr-pos';
+    const R=document.createElement('div');R.className='mr-pos';
+    const lName=lineup.seats?(lineup.seats[i+'L']||''):'';
+    const rName=lineup.seats?(lineup.seats[i+'R']||''):'';
+    if(lName){L.textContent=lName;if(lName===myPaddler)L.classList.add('me');}else{L.textContent='\u2014';L.classList.add('empty');}
+    if(rName){R.textContent=rName;if(rName===myPaddler)R.classList.add('me');}else{R.textContent='\u2014';R.classList.add('empty');}
+    row.appendChild(num);row.appendChild(L);row.appendChild(R);
+    boat.appendChild(row);
+  }
+  const swBot=document.createElement('div');swBot.style.cssText='text-align:center;padding:10px;margin-top:12px;border-top:1px solid var(--border)';
+  const swLbl=document.createElement('div');swLbl.style.cssText='font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px';swLbl.textContent='Sweep';
+  const swVal=document.createElement('div');swVal.style.cssText='font-size:.88rem;font-weight:600';
+  swVal.textContent=lineup.sweep||'\u2014';
+  if(lineup.sweep===myPaddler)swVal.style.color='var(--blue)';
+  swBot.appendChild(swLbl);swBot.appendChild(swVal);
+  boat.appendChild(swBot);
+  body.appendChild(boat);
+  if(lineup.notes){
+    const nl=document.createElement('div');nl.style.cssText='font-size:.7rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 6px';nl.textContent='Coach Notes';
+    const nn=document.createElement('div');nn.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:10px 14px;font-size:.82rem;line-height:1.5';
+    nn.textContent=lineup.notes;
+    body.appendChild(nl);body.appendChild(nn);
+  }
+  sheet.appendChild(header);sheet.appendChild(body);
+  overlay.appendChild(sheet);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  document.body.appendChild(overlay);
+}
+
 function openLineupEditor(race){
   const id=raceId(race);
   const raw=currentLineups[id]||{};
@@ -2767,7 +2815,7 @@ function renderYourNextRace(){
   const seat=document.createElement('div');seat.className='ynr-seat';seat.textContent='\uD83D\uDEA3 '+m.seat;
   const btnRow=document.createElement('div');btnRow.style.cssText='display:flex;gap:8px';
   const btn=document.createElement('button');btn.className='ynr-lineup-btn';btn.style.flex='1';btn.textContent='View lineup';
-  btn.addEventListener('click',()=>openLineupEditor(m.race));
+  btn.addEventListener('click',()=>openLineupViewer(m.race,m.lineup));
   const mapBtn=document.createElement('button');mapBtn.className='ynr-lineup-btn venue-zoom-trigger';
   mapBtn.style.cssText='flex-shrink:0;display:flex;align-items:center;gap:4px';
   mapBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;pointer-events:none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span style="pointer-events:none">Venue</span>';
@@ -3115,11 +3163,6 @@ const TUTORIAL_STEPS=[
     page:'schedule',selector:'.ev-card.racing',waitForDay:'d2',
     title:'Expand Race Lists',
     desc:'Tap "View races" to see all races for that day with times, lanes, and categories.'
-  },
-  {
-    page:'raceday',selector:'.rd-filter-mine',
-    title:'My Races Filter',
-    desc:"After picking your name on Home, tap this to see only races you're in."
   },
   {
     page:'raceday',selector:'.rd-race',
