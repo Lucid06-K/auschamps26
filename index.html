@@ -427,10 +427,38 @@ body{
   .result-input button{padding:10px 12px;font-size:.78rem}
   .results-chips{gap:4px}
   .result-chip{font-size:.68rem;padding:4px 8px}
+  /* Race Day table - tighter columns */
+  .raceday-page{padding:0 12px 32px}
+  .rd-table-head,.rd-race{grid-template-columns:44px 48px 1fr 58px;gap:5px}
+  .rd-race{padding:12px 8px;min-height:48px}
+  .rd-table-head{padding:8px}
+  .rd-race.live,.rd-race.next{padding-left:5px}
+  .rd-race-num{font-size:.72rem}
+  .rd-time{font-size:.72rem}
+  .rd-time-sub{font-size:.55rem}
+  .rd-tags .race-badge2,.rd-info .race-badge2{font-size:.58rem;padding:2px 5px}
+  .rd-status{font-size:.58rem;padding:2px 6px}
+}
+@media(max-width:360px){
+  .rd-table-head,.rd-race{grid-template-columns:40px 42px 1fr 50px;gap:4px;padding:8px 6px}
+  .rd-table-head span:nth-child(3){display:none}
+  .rd-table-head{grid-template-columns:40px 42px 1fr 50px}
+}
+/* iPad and wider - stretch table and add more breathing room */
+@media(min-width:768px){
+  .rd-table-head,.rd-race{grid-template-columns:72px 82px 1fr 100px;gap:10px;padding:14px 16px}
+  .rd-race-num{font-size:.85rem}
+  .rd-time{font-size:.85rem}
+  .rd-info .race-badge2{font-size:.7rem;padding:3px 9px}
+  .rd-status{font-size:.72rem;padding:4px 12px}
 }
 
-/* ---- Desktop ---- */
+/* ---- Desktop / iPad ---- */
 @media(min-width:768px){
+  /* Center modal sheets instead of slide from bottom */
+  .le-overlay,.pp-overlay{align-items:center}
+  .le-sheet{border-radius:16px;height:auto;max-height:85vh}
+  .pp-sheet{border-radius:16px;max-height:70vh}
   body{padding-bottom:0;display:flex;flex-direction:column;align-items:center}
   .bottom-nav{
     position:fixed;top:0;bottom:auto;
