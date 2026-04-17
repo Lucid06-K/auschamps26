@@ -663,6 +663,37 @@ body{
 .rd-status.next{background:var(--gold);color:#000}
 .rd-status.result{background:var(--gold);color:#000;font-size:.72rem}
 
+/* Loadouts toolbar in lineup editor */
+.le-loadouts{
+  display:flex;gap:6px;margin-bottom:14px;
+}
+.le-loadouts button{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--bg2);border:1px solid var(--border);color:var(--text);
+  padding:10px;border-radius:var(--r3);font-size:.78rem;font-weight:600;
+  cursor:pointer;font-family:inherit;
+  -webkit-tap-highlight-color:transparent;
+}
+.le-loadouts button svg{width:14px;height:14px}
+.le-loadouts button:active{transform:scale(.97);background:var(--bg3)}
+.le-loadouts .le-load-apply{background:var(--purple-soft);color:var(--purple);border-color:rgba(167,139,250,.3)}
+
+.lo-item{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);
+  padding:12px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;
+}
+.lo-name{flex:1;min-width:0}
+.lo-name .lo-title{font-size:.85rem;font-weight:700}
+.lo-name .lo-meta{font-size:.68rem;color:var(--text3);margin-top:2px}
+.lo-apply{
+  background:var(--purple);color:#fff;border:none;padding:7px 12px;
+  border-radius:var(--r3);font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;
+}
+.lo-del{
+  background:var(--red-soft);color:var(--red);border:none;
+  width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;font-family:inherit;
+}
+
 /* Result logger in lineup editor */
 .le-result-box{
   background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
@@ -2325,6 +2356,19 @@ function openLineupEditor(race){
     body.appendChild(warn);
   }
 
+  // Loadouts toolbar
+  const loTools=document.createElement('div');loTools.className='le-loadouts';
+  const loApplyBtn=document.createElement('button');loApplyBtn.className='le-load-apply';
+  loApplyBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Load template';
+  loApplyBtn.addEventListener('click',()=>openLoadoutPicker(race,id,existing,()=>{
+    overlay.remove();setTimeout(()=>openLineupEditor(race),80);
+  }));
+  const loSaveBtn=document.createElement('button');
+  loSaveBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save as template';
+  loSaveBtn.addEventListener('click',()=>saveAsLoadout(existing));
+  loTools.appendChild(loApplyBtn);loTools.appendChild(loSaveBtn);
+  body.appendChild(loTools);
+
   const boat=document.createElement('div');boat.className='le-boat';
 
   // Helper to update a seat element in-place after picking
@@ -2693,6 +2737,92 @@ renderPaddlers();renderRaceDay();renderYourNextRace();
     }
   });
 })();
+
+// ======== LOADOUTS (saved lineup templates) ========
+const loadoutsRef=db.collection('loadouts');
+let currentLoadouts=[];
+loadoutsRef.orderBy('updatedAt','desc').onSnapshot(snap=>{
+  currentLoadouts=[];snap.forEach(doc=>currentLoadouts.push({id:doc.id,...doc.data()}));
+});
+
+function saveAsLoadout(existing){
+  const hasAnyone=(existing.seats&&Object.values(existing.seats).filter(x=>x).length>0)||existing.drummer||existing.sweep;
+  if(!hasAnyone){showToast('Nothing to save - lineup is empty');return;}
+  const name=prompt('Name this template (e.g. "Premier Mixed", "Open 10s A"):','');
+  if(!name||!name.trim())return;
+  const cleanName=name.trim().slice(0,60);
+  const docId=cleanName.replace(/[^a-zA-Z0-9]/g,'_').toLowerCase();
+  const data={
+    name:cleanName,
+    seats:existing.seats||{},
+    drummer:existing.drummer||'',
+    sweep:existing.sweep||'',
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  loadoutsRef.doc(docId).set(data).then(()=>showToast('Template saved: '+cleanName));
+}
+
+function openLoadoutPicker(race,raceDocId,existing,onApplied){
+  const overlay=document.createElement('div');overlay.className='pp-overlay';
+  const sheet=document.createElement('div');sheet.className='pp-sheet';
+  const head=document.createElement('div');head.className='pp-head';
+  const h=document.createElement('h4');h.textContent='Load a saved template';head.appendChild(h);
+  const hint=document.createElement('div');
+  hint.style.cssText='font-size:.72rem;color:var(--text3);margin-top:4px';
+  hint.textContent='Applies saved paddlers to this race';
+  head.appendChild(hint);
+  const listWrap=document.createElement('div');listWrap.className='pp-list';
+  function render(){
+    listWrap.textContent='';
+    if(currentLoadouts.length===0){
+      const empty=document.createElement('div');
+      empty.style.cssText='text-align:center;color:var(--text3);padding:24px;font-size:.85rem';
+      empty.textContent='No templates yet. Build a lineup, then tap "Save as template" to create one.';
+      listWrap.appendChild(empty);
+      return;
+    }
+    currentLoadouts.forEach(lo=>{
+      const row=document.createElement('div');row.className='lo-item';
+      const nameDiv=document.createElement('div');nameDiv.className='lo-name';
+      const title=document.createElement('div');title.className='lo-title';title.textContent=lo.name;
+      const seatCount=Object.values(lo.seats||{}).filter(x=>x).length;
+      const total=seatCount+(lo.drummer?1:0)+(lo.sweep?1:0);
+      const meta=document.createElement('div');meta.className='lo-meta';
+      meta.textContent=total+'/12 assigned';
+      nameDiv.appendChild(title);nameDiv.appendChild(meta);
+      const apply=document.createElement('button');apply.className='lo-apply';apply.textContent='Apply';
+      apply.addEventListener('click',e=>{
+        e.stopPropagation();
+        applyLoadout(raceDocId,lo);
+        overlay.remove();
+        if(onApplied)onApplied();
+      });
+      const del=document.createElement('button');del.className='lo-del';del.textContent='\u00D7';del.setAttribute('aria-label','Delete '+lo.name);
+      del.addEventListener('click',e=>{
+        e.stopPropagation();
+        if(!confirm('Delete template "'+lo.name+'"?'))return;
+        loadoutsRef.doc(lo.id).delete().then(()=>{showToast('Template deleted');render();});
+      });
+      row.appendChild(nameDiv);row.appendChild(apply);row.appendChild(del);
+      listWrap.appendChild(row);
+    });
+  }
+  render();
+  sheet.appendChild(head);sheet.appendChild(listWrap);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  overlay.appendChild(sheet);document.body.appendChild(overlay);
+}
+
+function applyLoadout(raceDocId,lo){
+  const data={
+    raceId:raceDocId,
+    seats:lo.seats||{},
+    drummer:lo.drummer||firebase.firestore.FieldValue.delete(),
+    sweep:lo.sweep||firebase.firestore.FieldValue.delete(),
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  lineupsRef.doc(raceDocId).set(data,{merge:true}).then(()=>showToast('Template applied: '+lo.name));
+}
 
 // ======== TUTORIAL ========
 const TUTORIAL_STEPS=[
