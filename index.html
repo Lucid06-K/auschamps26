@@ -2798,44 +2798,35 @@ function openLineupEditor(race){
 }
 
 function saveLineupSeat(id,key,chosen,existing){
-  // Use dotted field paths so Firestore merge:true deletes specific nested fields
   const FV=firebase.firestore.FieldValue;
-  const data={raceId:id,updatedAt:FV.serverTimestamp()};
   let removedFrom='';
 
+  // Update local state first
+  if(!existing.seats)existing.seats={};
   if(chosen){
-    // Remove this paddler from any other seat/drummer/sweep
-    if(existing.seats){
-      Object.keys(existing.seats).forEach(k=>{
-        if(k!==key&&existing.seats[k]===chosen){
-          data['seats.'+k]=FV.delete();
-          delete existing.seats[k];
-          removedFrom='seat '+k;
-        }
-      });
-    }
-    if(key!=='drummer'&&existing.drummer===chosen){
-      data.drummer=FV.delete();
-      existing.drummer='';
-      removedFrom='drummer';
-    }
-    if(key!=='sweep'&&existing.sweep===chosen){
-      data.sweep=FV.delete();
-      existing.sweep='';
-      removedFrom='sweep';
-    }
+    // Remove this paddler from any other seat
+    Object.keys(existing.seats).forEach(k=>{
+      if(k!==key&&existing.seats[k]===chosen){delete existing.seats[k];removedFrom='seat '+k;}
+    });
+    // Remove from drummer/sweep if chosen is currently there
+    if(key!=='drummer'&&existing.drummer===chosen){existing.drummer='';removedFrom='drummer';}
+    if(key!=='sweep'&&existing.sweep===chosen){existing.sweep='';removedFrom='sweep';}
   }
 
-  // Set or clear target position
-  if(key==='drummer'||key==='sweep'){
-    data[key]=chosen||FV.delete();
-  }else{
-    data['seats.'+key]=chosen||FV.delete();
-    if(!existing.seats)existing.seats={};
-    if(chosen)existing.seats[key]=chosen;else delete existing.seats[key];
-  }
+  // Update target position in local state
+  if(key==='drummer'){existing.drummer=chosen;}
+  else if(key==='sweep'){existing.sweep=chosen;}
+  else{if(chosen)existing.seats[key]=chosen;else delete existing.seats[key];}
 
-  lineupsRef.doc(id).set(data,{merge:true}).then(()=>{
+  // Write the full lineup to Firestore (set without merge replaces everything)
+  lineupsRef.doc(id).set({
+    raceId:id,
+    seats:existing.seats||{},
+    drummer:existing.drummer||'',
+    sweep:existing.sweep||'',
+    notes:existing.notes||'',
+    updatedAt:FV.serverTimestamp()
+  }).then(()=>{
     const msg=chosen?(removedFrom?'Moved '+chosen+' from '+removedFrom:'Assigned '+chosen):'Cleared';
     showToast(msg);
   }).catch(err=>{
