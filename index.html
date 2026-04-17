@@ -2780,37 +2780,49 @@ function openLineupEditor(race){
 }
 
 function saveLineupSeat(id,key,chosen,existing){
-  const data={raceId:id,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
-  // Auto-remove the chosen paddler from any other position in this lineup
-  const seats={...(existing.seats||{})};
+  // Use dotted field paths so Firestore merge:true deletes specific nested fields
+  const FV=firebase.firestore.FieldValue;
+  const data={raceId:id,updatedAt:FV.serverTimestamp()};
   let removedFrom='';
+
   if(chosen){
-    // Clear from other seats
-    Object.keys(seats).forEach(k=>{
-      if(k!==key&&seats[k]===chosen){delete seats[k];removedFrom='seat '+k;}
-    });
-    // Clear from drummer/sweep if needed
+    // Remove this paddler from any other seat/drummer/sweep
+    if(existing.seats){
+      Object.keys(existing.seats).forEach(k=>{
+        if(k!==key&&existing.seats[k]===chosen){
+          data['seats.'+k]=FV.delete();
+          delete existing.seats[k];
+          removedFrom='seat '+k;
+        }
+      });
+    }
     if(key!=='drummer'&&existing.drummer===chosen){
-      data.drummer=firebase.firestore.FieldValue.delete();
-      existing.drummer='';removedFrom='drummer';
+      data.drummer=FV.delete();
+      existing.drummer='';
+      removedFrom='drummer';
     }
     if(key!=='sweep'&&existing.sweep===chosen){
-      data.sweep=firebase.firestore.FieldValue.delete();
-      existing.sweep='';removedFrom='sweep';
+      data.sweep=FV.delete();
+      existing.sweep='';
+      removedFrom='sweep';
     }
   }
+
+  // Set or clear target position
   if(key==='drummer'||key==='sweep'){
-    data[key]=chosen||firebase.firestore.FieldValue.delete();
-    // Still write seats if we removed someone from a seat
-    if(removedFrom.startsWith('seat ')){data.seats=seats;existing.seats=seats;}
+    data[key]=chosen||FV.delete();
   }else{
-    if(chosen)seats[key]=chosen;else delete seats[key];
-    data.seats=seats;
-    existing.seats=seats;
+    data['seats.'+key]=chosen||FV.delete();
+    if(!existing.seats)existing.seats={};
+    if(chosen)existing.seats[key]=chosen;else delete existing.seats[key];
   }
+
   lineupsRef.doc(id).set(data,{merge:true}).then(()=>{
     const msg=chosen?(removedFrom?'Moved '+chosen+' from '+removedFrom:'Assigned '+chosen):'Cleared';
     showToast(msg);
+  }).catch(err=>{
+    console.warn('Save failed',err);
+    showToast('Save failed - check connection');
   });
 }
 
@@ -3244,13 +3256,17 @@ function renderTemplates(){
       const batch=db.batch();
       matching.forEach(r=>{
         const rid=raceId(r);
+        // Full set (no merge) to REPLACE seats entirely - prevents merge duplicates
+        const existing=currentLineups[rid]||{};
         batch.set(lineupsRef.doc(rid),{
           raceId:rid,
+          race:r.title,
           seats:lo.seats||{},
-          drummer:lo.drummer||firebase.firestore.FieldValue.delete(),
-          sweep:lo.sweep||firebase.firestore.FieldValue.delete(),
+          drummer:lo.drummer||'',
+          sweep:lo.sweep||'',
+          notes:existing.notes||'',
           updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-        },{merge:true});
+        });
       });
       batch.commit().then(()=>{
         showToast('Applied to '+matching.length+' race'+(matching.length===1?'':'s'));
@@ -3373,14 +3389,16 @@ function openLoadoutPicker(race,raceDocId,existing,onApplied){
 }
 
 function applyLoadout(raceDocId,lo){
-  const data={
+  const existing=currentLineups[raceDocId]||{};
+  // Full set replaces seats entirely (prevents nested-map merge duplicates)
+  lineupsRef.doc(raceDocId).set({
     raceId:raceDocId,
     seats:lo.seats||{},
-    drummer:lo.drummer||firebase.firestore.FieldValue.delete(),
-    sweep:lo.sweep||firebase.firestore.FieldValue.delete(),
+    drummer:lo.drummer||'',
+    sweep:lo.sweep||'',
+    notes:existing.notes||'',
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-  };
-  lineupsRef.doc(raceDocId).set(data,{merge:true}).then(()=>showToast('Template applied: '+lo.name));
+  }).then(()=>showToast('Template applied: '+lo.name));
 }
 
 // ======== TUTORIAL ========
