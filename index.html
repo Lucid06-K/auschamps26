@@ -935,7 +935,20 @@ body{
 .pd-item{
   background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);
   padding:12px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;
+  transition:transform .15s,opacity .15s,box-shadow .15s;touch-action:pan-x;
 }
+.pd-item.dragging{
+  opacity:.95;box-shadow:0 8px 24px rgba(0,0,0,.4);
+  transform:scale(1.02);z-index:10;transition:none;
+  border-color:var(--blue);
+}
+.pd-grip{
+  display:flex;align-items:center;justify-content:center;
+  width:28px;height:36px;cursor:grab;color:var(--text3);flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;
+}
+.pd-grip:active{cursor:grabbing;color:var(--text)}
+.pd-grip svg{width:18px;height:18px;pointer-events:none}
 .pd-name{flex:1;font-size:.88rem;font-weight:500}
 .pd-count{font-size:.7rem;color:var(--text3);background:var(--bg3);padding:3px 8px;border-radius:100px}
 .pd-del{
@@ -1369,6 +1382,10 @@ body{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
         Roster
       </button>
+      <button class="rd-roster-btn" data-goto="templates">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Templates
+      </button>
     </div>
     <div id="rdList"></div>
   </div>
@@ -1397,6 +1414,17 @@ body{
       <button id="pdClearAll" style="background:var(--red-soft);border:1px solid var(--red-border);color:var(--red);padding:0 14px;border-radius:var(--r3);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Remove all</button>
     </div>
     <div id="pdList"></div>
+  </div>
+</div>
+
+<!-- ====== TEMPLATES ====== -->
+<div class="page" id="pg-templates">
+  <div class="page-head" style="display:flex;align-items:center;gap:12px">
+    <button class="le-close" data-goto="raceday" aria-label="Back">&larr;</button>
+    <div><h1 style="font-size:1.3rem">Templates</h1><p id="tplCount">0 templates</p></div>
+  </div>
+  <div class="paddlers-page">
+    <div id="tplList"></div>
   </div>
 </div>
 
@@ -1553,14 +1581,16 @@ function doGoTo(id){
   pages.forEach(p=>p.classList.toggle('active',p.id==='pg-'+id));
   window.scrollTo(0,0);
   if(id==='myraces')renderMyRaces();
+  if(id==='templates'&&typeof renderTemplates==='function')renderTemplates();
 }
 function goTo(id){
-  if(id==='raceday'&&!isCoachUnlocked()){
-    showPasswordModal();return;
+  if((id==='raceday'||id==='paddlers'||id==='templates')&&!isCoachUnlocked()){
+    showPasswordModal(id);return;
   }
   doGoTo(id);
 }
-function showPasswordModal(){
+function showPasswordModal(targetId){
+  targetId=targetId||'raceday';
   const overlay=document.createElement('div');overlay.className='pp-overlay';
   overlay.style.animation='none';
   const sheet=document.createElement('div');sheet.className='pp-sheet';
@@ -1589,7 +1619,7 @@ function showPasswordModal(){
     if(input.value===COACH_PASSWORD){
       localStorage.setItem('mudbc-coach','1');
       overlay.remove();showToast('Unlocked - coach mode');
-      doGoTo('raceday');
+      doGoTo(targetId);
     }else{
       err.textContent='Wrong password';
       input.value='';input.focus();
@@ -2235,7 +2265,10 @@ function renderPaddlers(){
   }else{
     filtered.forEach(name=>{
       const row=document.createElement('div');
-      row.className='pd-item';
+      row.className='pd-item';row.dataset.name=name;
+      const grip=document.createElement('div');grip.className='pd-grip';
+      grip.setAttribute('aria-label','Drag to reorder');
+      grip.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
       const nm=document.createElement('div');
       nm.className='pd-name';nm.textContent=name;
       const count=countPaddlerRaces(name);
@@ -2248,9 +2281,12 @@ function renderPaddlers(){
         rosterRef.set({names:newNames,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
         showToast('Removed '+name);
       });
-      row.appendChild(nm);row.appendChild(ct);row.appendChild(del);
+      row.appendChild(grip);row.appendChild(nm);row.appendChild(ct);row.appendChild(del);
       list.appendChild(row);
     });
+    // Only allow drag reorder when no search filter
+    if(!search)attachRosterDragHandlers(list);
+    else list.querySelectorAll('.pd-grip').forEach(g=>{g.style.opacity='.3';g.style.cursor='not-allowed';});
   }
   // Restore scroll + focus + selection
   requestAnimationFrame(()=>{
@@ -2262,6 +2298,46 @@ function renderPaddlers(){
         try{if(selStart!=null)el.setSelectionRange(selStart,selEnd);}catch(e){}
       }
     }
+  });
+}
+
+function attachRosterDragHandlers(list){
+  let dragEl=null,startY=0,pointerId=null;
+  list.querySelectorAll('.pd-grip').forEach(grip=>{
+    grip.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      dragEl=grip.closest('.pd-item');
+      if(!dragEl)return;
+      startY=e.clientY;pointerId=e.pointerId;
+      dragEl.classList.add('dragging');
+      grip.setPointerCapture(e.pointerId);
+    });
+    grip.addEventListener('pointermove',e=>{
+      if(!dragEl)return;
+      const y=e.clientY;
+      // Find sibling to swap with
+      const siblings=[...list.querySelectorAll('.pd-item:not(.dragging)')];
+      const next=siblings.find(sib=>{
+        const rect=sib.getBoundingClientRect();
+        return y<rect.top+rect.height/2;
+      });
+      if(next){list.insertBefore(dragEl,next);}
+      else{list.appendChild(dragEl);}
+    });
+    const endDrag=e=>{
+      if(!dragEl)return;
+      dragEl.classList.remove('dragging');
+      try{grip.releasePointerCapture(pointerId);}catch(err){}
+      dragEl=null;
+      // Commit new order
+      const newOrder=[...list.querySelectorAll('.pd-item')].map(r=>r.dataset.name);
+      // Only save if order actually changed
+      if(JSON.stringify(newOrder)!==JSON.stringify(currentRoster)){
+        rosterRef.set({names:newOrder,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      }
+    };
+    grip.addEventListener('pointerup',endDrag);
+    grip.addEventListener('pointercancel',endDrag);
   });
 }
 
@@ -3102,25 +3178,108 @@ const loadoutsRef=db.collection('loadouts');
 let currentLoadouts=[];
 loadoutsRef.orderBy('updatedAt','desc').onSnapshot(snap=>{
   currentLoadouts=[];snap.forEach(doc=>currentLoadouts.push({id:doc.id,...doc.data()}));
+  if(document.getElementById('pg-templates')&&document.getElementById('pg-templates').classList.contains('active'))renderTemplates();
 });
 
-function saveAsLoadout(existing){
-  const hasAnyone=(existing.seats&&Object.values(existing.seats).filter(x=>x).length>0)||existing.drummer||existing.sweep;
-  if(!hasAnyone){showToast('Nothing to save - lineup is empty');return;}
+function renderTemplates(){
+  const list=document.getElementById('tplList');
+  const count=document.getElementById('tplCount');
+  if(!list)return;
+  list.textContent='';
+  count.textContent=currentLoadouts.length+' template'+(currentLoadouts.length===1?'':'s');
+  if(currentLoadouts.length===0){
+    const empty=document.createElement('div');
+    empty.style.cssText='text-align:center;color:var(--text3);padding:40px 20px;font-size:.88rem;line-height:1.6';
+    empty.innerHTML='No templates yet.<br><br>Build a lineup in a race and tap<br><strong>Save as template</strong>.';
+    list.appendChild(empty);return;
+  }
 
-  // Build tag options from RACE_DATA
-  const tagOptions=[{value:'',label:'Save only (don\'t auto-apply)'}];
+  // Build tag options
   const categories=new Set(),stages=new Set(),distances=new Set();
   RACE_DATA.forEach(r=>{
     const titleOnly=r.title.replace(/Race\s+#?[\d\/\-]+\s*-?\s*/,'');
     const p=parseRaceTitle(titleOnly);
-    if(p.category)categories.add(p.category);
-    if(p.stage)stages.add(p.stage);
-    if(p.distance)distances.add(p.distance);
+    if(p.category)categories.add(p.category);if(p.stage)stages.add(p.stage);if(p.distance)distances.add(p.distance);
   });
-  [...categories].sort().forEach(c=>tagOptions.push({value:'cat:'+c,label:'All '+c+' races'}));
-  [...stages].sort().forEach(s=>tagOptions.push({value:'stage:'+s,label:'All '+s+' races'}));
-  [...distances].sort().forEach(d=>tagOptions.push({value:'dist:'+d,label:'All '+d+' races'}));
+
+  currentLoadouts.forEach(lo=>{
+    const card=document.createElement('div');
+    card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px';
+
+    const head=document.createElement('div');
+    head.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:12px';
+    const nameBlock=document.createElement('div');nameBlock.style.flex='1';
+    const title=document.createElement('div');title.style.cssText='font-size:.95rem;font-weight:700';title.textContent=lo.name;
+    const seatCount=Object.values(lo.seats||{}).filter(x=>x).length;
+    const total=seatCount+(lo.drummer?1:0)+(lo.sweep?1:0);
+    const meta=document.createElement('div');meta.style.cssText='font-size:.68rem;color:var(--text3);margin-top:2px';
+    meta.textContent=total+'/12 assigned';
+    nameBlock.appendChild(title);nameBlock.appendChild(meta);
+    const del=document.createElement('button');
+    del.className='pd-del';del.textContent='\u00D7';del.setAttribute('aria-label','Delete '+lo.name);
+    del.addEventListener('click',()=>{
+      if(del.dataset.confirm==='1'){
+        loadoutsRef.doc(lo.id).delete().then(()=>showToast('Template deleted'));
+      }else{
+        del.dataset.confirm='1';del.textContent='?';del.style.background='var(--red)';del.style.color='#fff';
+        setTimeout(()=>{if(del.dataset)del.dataset.confirm='';del.textContent='\u00D7';del.style.background='';del.style.color='';},3000);
+      }
+    });
+    head.appendChild(nameBlock);head.appendChild(del);
+    card.appendChild(head);
+
+    // Tag-based apply
+    const applyLbl=document.createElement('div');
+    applyLbl.style.cssText='font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px';
+    applyLbl.textContent='Apply to';
+    card.appendChild(applyLbl);
+
+    const selectWrap=document.createElement('div');selectWrap.style.cssText='display:flex;gap:6px';
+    const select=document.createElement('select');
+    select.style.cssText='flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r3);color:var(--text);padding:10px 12px;font-size:.82rem;font-family:inherit;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\'><path d=\'M6 9l6 6 6-6\'/></svg>");background-repeat:no-repeat;background-position:right 12px center;background-size:14px;padding-right:36px';
+    const optDefault=document.createElement('option');optDefault.value='';optDefault.textContent='Select tag\u2026';select.appendChild(optDefault);
+    [...categories].sort().forEach(c=>{const o=document.createElement('option');o.value='cat:'+c;o.textContent='All '+c+' races';select.appendChild(o);});
+    [...stages].sort().forEach(s=>{const o=document.createElement('option');o.value='stage:'+s;o.textContent='All '+s+' races';select.appendChild(o);});
+    [...distances].sort().forEach(d=>{const o=document.createElement('option');o.value='dist:'+d;o.textContent='All '+d+' races';select.appendChild(o);});
+
+    const applyBtn=document.createElement('button');
+    applyBtn.style.cssText='background:var(--purple);color:#fff;border:none;padding:10px 16px;border-radius:var(--r3);font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap';
+    applyBtn.textContent='Apply';
+    applyBtn.addEventListener('click',()=>{
+      const tag=select.value;
+      if(!tag){showToast('Pick a tag first');return;}
+      const[tagType,tagVal]=tag.split(':');
+      const matching=RACE_DATA.filter(r=>{
+        const titleOnly=r.title.replace(/Race\s+#?[\d\/\-]+\s*-?\s*/,'');
+        const p=parseRaceTitle(titleOnly);
+        return(tagType==='cat'&&p.category===tagVal)||(tagType==='stage'&&p.stage===tagVal)||(tagType==='dist'&&p.distance===tagVal);
+      });
+      if(matching.length===0){showToast('No races match');return;}
+      const batch=db.batch();
+      matching.forEach(r=>{
+        const rid=raceId(r);
+        batch.set(lineupsRef.doc(rid),{
+          raceId:rid,
+          seats:lo.seats||{},
+          drummer:lo.drummer||firebase.firestore.FieldValue.delete(),
+          sweep:lo.sweep||firebase.firestore.FieldValue.delete(),
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+        },{merge:true});
+      });
+      batch.commit().then(()=>{
+        showToast('Applied to '+matching.length+' race'+(matching.length===1?'':'s'));
+        select.value='';
+      }).catch(()=>showToast('Apply failed'));
+    });
+    selectWrap.appendChild(select);selectWrap.appendChild(applyBtn);
+    card.appendChild(selectWrap);
+    list.appendChild(card);
+  });
+}
+
+function saveAsLoadout(existing){
+  const hasAnyone=(existing.seats&&Object.values(existing.seats).filter(x=>x).length>0)||existing.drummer||existing.sweep;
+  if(!hasAnyone){showToast('Nothing to save - lineup is empty');return;}
 
   const overlay=document.createElement('div');overlay.className='pp-overlay';
   overlay.style.animation='none';
@@ -3130,40 +3289,18 @@ function saveAsLoadout(existing){
   const h=document.createElement('h4');h.textContent='Save lineup as template';head.appendChild(h);
   const hint=document.createElement('div');
   hint.style.cssText='font-size:.78rem;color:var(--text2);margin:8px 0 12px;line-height:1.5';
-  hint.textContent='Give this template a name so you can apply it to other races later.';
+  hint.innerHTML='Manage templates &amp; bulk-apply to race tags from <strong>Race Mgmt &rarr; Templates</strong>.';
   head.appendChild(hint);
 
-  // Name input
-  const nameLbl=document.createElement('div');
-  nameLbl.style.cssText='font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px';
-  nameLbl.textContent='Template name';
-  const input=document.createElement('input');
-  input.type='text';input.className='pp-search';
-  input.placeholder='e.g. Premier Mixed A';input.autocomplete='off';input.maxLength=60;
-  input.style.marginBottom='14px';
-
-  // Auto-apply selector
-  const tagLbl=document.createElement('div');
-  tagLbl.style.cssText='font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px';
-  tagLbl.textContent='Auto-apply to';
-  const select=document.createElement('select');
-  select.className='pp-search';
-  select.style.cssText='width:100%;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\'><path d=\'M6 9l6 6 6-6\'/></svg>");background-repeat:no-repeat;background-position:right 12px center;background-size:14px;padding-right:36px;margin-bottom:14px';
-  tagOptions.forEach(opt=>{
-    const o=document.createElement('option');
-    o.value=opt.value;o.textContent=opt.label;
-    select.appendChild(o);
-  });
-
   const form=document.createElement('form');
-
+  form.style.cssText='display:flex;gap:8px;margin-bottom:12px';
+  const input=document.createElement('input');
+  input.type='text';input.className='pp-search';input.style.flex='1';
+  input.placeholder='e.g. Premier Mixed A';input.autocomplete='off';input.maxLength=60;
   const saveBtn=document.createElement('button');
-  saveBtn.type='submit';saveBtn.textContent='Save template';
-  saveBtn.style.cssText='background:var(--blue);color:#fff;border:none;padding:12px 16px;border-radius:var(--r3);font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%';
-
-  form.appendChild(nameLbl);form.appendChild(input);
-  form.appendChild(tagLbl);form.appendChild(select);
-  form.appendChild(saveBtn);
+  saveBtn.type='submit';saveBtn.textContent='Save';
+  saveBtn.style.cssText='background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:var(--r3);font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit';
+  form.appendChild(input);form.appendChild(saveBtn);
 
   form.addEventListener('submit',e=>{
     e.preventDefault();
@@ -3171,48 +3308,19 @@ function saveAsLoadout(existing){
     if(!name){input.focus();return;}
     const cleanName=name.slice(0,60);
     const docId=cleanName.replace(/[^a-zA-Z0-9]/g,'_').toLowerCase();
-    const loadoutData={
+    loadoutsRef.doc(docId).set({
       name:cleanName,
       seats:existing.seats||{},
       drummer:existing.drummer||'',
       sweep:existing.sweep||'',
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-    };
-    loadoutsRef.doc(docId).set(loadoutData).then(()=>{
-      const tag=select.value;
-      if(tag){
-        // Apply to all matching races
-        const [tagType,tagVal]=tag.split(':');
-        const matching=RACE_DATA.filter(r=>{
-          const titleOnly=r.title.replace(/Race\s+#?[\d\/\-]+\s*-?\s*/,'');
-          const p=parseRaceTitle(titleOnly);
-          return(tagType==='cat'&&p.category===tagVal)||(tagType==='stage'&&p.stage===tagVal)||(tagType==='dist'&&p.distance===tagVal);
-        });
-        const batch=db.batch();
-        matching.forEach(r=>{
-          const rid=raceId(r);
-          batch.set(lineupsRef.doc(rid),{
-            raceId:rid,
-            seats:loadoutData.seats,
-            drummer:loadoutData.drummer||firebase.firestore.FieldValue.delete(),
-            sweep:loadoutData.sweep||firebase.firestore.FieldValue.delete(),
-            updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-          },{merge:true});
-        });
-        batch.commit().then(()=>{
-          overlay.remove();
-          showToast('Saved + applied to '+matching.length+' race'+(matching.length===1?'':'s'));
-        }).catch(()=>showToast('Save succeeded but bulk apply failed'));
-      }else{
-        overlay.remove();
-        showToast('Template saved: '+cleanName);
-      }
-    }).catch(()=>showToast('Save failed - check connection'));
+    }).then(()=>{overlay.remove();showToast('Template saved: '+cleanName);})
+    .catch(()=>showToast('Save failed - check connection'));
   });
 
   const cancel=document.createElement('button');
   cancel.type='button';cancel.textContent='Cancel';
-  cancel.style.cssText='background:none;border:none;color:var(--text3);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;width:100%;padding:10px;margin-top:4px';
+  cancel.style.cssText='background:none;border:none;color:var(--text3);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;width:100%;padding:10px';
   cancel.addEventListener('click',()=>overlay.remove());
 
   head.appendChild(form);head.appendChild(cancel);
