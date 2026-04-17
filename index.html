@@ -647,6 +647,10 @@ body{
   align-items:center;margin-top:8px;padding-top:12px;
   border-top:1px solid var(--border);
 }
+.le-special-top{
+  margin-top:0;padding-top:0;padding-bottom:12px;margin-bottom:8px;
+  border-top:none;border-bottom:1px solid var(--border);
+}
 .le-special-lbl{font-size:.7rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em}
 .le-notes{
   width:100%;background:var(--bg3);border:1px solid var(--border);
@@ -2109,6 +2113,19 @@ function openLineupEditor(race){
   }
 
   const boat=document.createElement('div');boat.className='le-boat';
+
+  // Drummer (front of boat - above seat 1)
+  const drumWrap=document.createElement('div');drumWrap.className='le-special le-special-top';
+  const drumLbl=document.createElement('div');drumLbl.className='le-special-lbl';drumLbl.textContent='Drummer';
+  const drumSeat=document.createElement('div');drumSeat.className='le-seat';
+  if(existing.drummer){drumSeat.classList.add('filled');drumSeat.textContent=existing.drummer;if(conflicts.includes(existing.drummer))drumSeat.classList.add('conflict');}
+  else drumSeat.textContent='\uFF0B';
+  drumSeat.addEventListener('click',()=>pickPaddler(race,'drummer',existing.drummer,chosen=>{
+    saveLineupSeat(id,'drummer',chosen,existing);overlay.remove();setTimeout(()=>openLineupEditor(race),50);
+  }));
+  drumWrap.appendChild(drumLbl);drumWrap.appendChild(drumSeat);
+  boat.appendChild(drumWrap);
+
   const labels=document.createElement('div');labels.className='le-boat-labels';
   labels.innerHTML='<span>&nbsp;</span><span>LEFT</span><span>RIGHT</span>';
   boat.appendChild(labels);
@@ -2138,19 +2155,7 @@ function openLineupEditor(race){
     boat.appendChild(r);
   }
 
-  // Drummer
-  const drumWrap=document.createElement('div');drumWrap.className='le-special';
-  const drumLbl=document.createElement('div');drumLbl.className='le-special-lbl';drumLbl.textContent='Drummer';
-  const drumSeat=document.createElement('div');drumSeat.className='le-seat';
-  if(existing.drummer){drumSeat.classList.add('filled');drumSeat.textContent=existing.drummer;if(conflicts.includes(existing.drummer))drumSeat.classList.add('conflict');}
-  else drumSeat.textContent='\uFF0B';
-  drumSeat.addEventListener('click',()=>pickPaddler(race,'drummer',existing.drummer,chosen=>{
-    saveLineupSeat(id,'drummer',chosen,existing);overlay.remove();setTimeout(()=>openLineupEditor(race),50);
-  }));
-  drumWrap.appendChild(drumLbl);drumWrap.appendChild(drumSeat);
-  boat.appendChild(drumWrap);
-
-  // Sweep
+  // Sweep (back of boat - below seat 10)
   const swWrap=document.createElement('div');swWrap.className='le-special';
   const swLbl=document.createElement('div');swLbl.className='le-special-lbl';swLbl.textContent='Sweep';
   const swSeat=document.createElement('div');swSeat.className='le-seat';
