@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' blob: https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://api.open-meteo.com https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net https://firestore.googleapis.com;">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -3586,12 +3586,13 @@ function endTutorial(){
 // Allow escape to close
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&tutOverlay)endTutorial();});
 
-// PWA - register service worker and manifest
+// PWA - unregister old service workers to prevent stale CSS caching
 if('serviceWorker' in navigator){
-  const swCode='self.addEventListener("install",e=>self.skipWaiting());self.addEventListener("activate",e=>self.clients.claim());self.addEventListener("fetch",e=>e.respondWith(fetch(e.request).catch(()=>caches.match(e.request))));';
-  const swBlob=new Blob([swCode],{type:'application/javascript'});
-  const swUrl=URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swUrl).catch(()=>{});
+  navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>r.unregister());}).catch(()=>{});
+}
+// Clear any old caches
+if('caches' in window){
+  caches.keys().then(keys=>keys.forEach(k=>caches.delete(k))).catch(()=>{});
 }
 // Inject manifest
 (function(){
