@@ -569,6 +569,62 @@ body{
 }
 .maps-link:active{opacity:.7}
 
+/* ---- My Races ---- */
+.mr-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px;margin-bottom:10px;
+}
+.mr-card.live{border-color:var(--green);background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(34,197,94,.02));animation:pulseGreen 2s ease-in-out infinite}
+.mr-card.next{border-color:var(--gold);background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02))}
+.mr-card.past{opacity:.55}
+.mr-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
+.mr-title{font-size:.95rem;font-weight:800;line-height:1.2}
+.mr-time{font-size:.78rem;color:var(--text2);margin-top:2px;font-weight:600}
+.mr-cd{font-size:.72rem;font-weight:700;color:var(--gold);flex-shrink:0;padding:4px 10px;background:var(--gold-soft);border-radius:100px}
+.mr-cd.live{color:var(--green);background:var(--green-soft)}
+.mr-cd.past{color:var(--text3);background:var(--bg3)}
+.mr-seat{
+  background:var(--blue-soft);border:1px solid var(--blue-border);
+  padding:10px 14px;border-radius:var(--r3);margin:8px 0;
+  font-size:.9rem;font-weight:700;color:var(--blue);
+  display:flex;align-items:center;gap:8px;
+}
+.mr-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.mr-lineup-toggle{
+  background:none;border:1px solid var(--border);color:var(--text2);
+  padding:8px 12px;border-radius:var(--r3);font-size:.72rem;font-weight:600;
+  cursor:pointer;font-family:inherit;width:100%;margin-top:8px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.mr-lineup-toggle svg{width:14px;height:14px;transition:transform .2s}
+.mr-lineup-toggle.open svg{transform:rotate(180deg)}
+.mr-lineup-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.mr-lineup-body.open{max-height:1200px}
+.mr-boat-mini{
+  background:var(--bg3);border-radius:var(--r3);padding:12px;margin-top:10px;
+  font-size:.75rem;line-height:1.8;
+}
+.mr-seat-row{display:grid;grid-template-columns:30px 1fr 1fr;gap:6px;align-items:center}
+.mr-seat-row span:first-child{color:var(--text3);font-weight:700;text-align:center}
+.mr-seat-row .mr-pos{padding:3px 6px;background:var(--bg2);border-radius:4px;font-size:.72rem}
+.mr-seat-row .mr-pos.me{background:var(--blue);color:#fff;font-weight:700}
+.mr-seat-row .mr-pos.empty{color:var(--text3)}
+.mr-special-mini{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;
+  padding-top:10px;border-top:1px solid var(--border);
+}
+.mr-special-mini div{background:var(--bg2);padding:8px 12px;border-radius:var(--r3);font-size:.75rem;text-align:center}
+.mr-special-mini div strong{display:block;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.mr-empty-state{
+  text-align:center;padding:40px 20px;color:var(--text3);font-size:.88rem;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+}
+.mr-empty-state button{
+  background:var(--blue);color:#fff;border:none;padding:10px 20px;
+  border-radius:var(--r3);font-size:.82rem;font-weight:600;cursor:pointer;
+  font-family:inherit;margin-top:12px;
+}
+
 /* ---- Race Day ---- */
 .raceday-page{padding:0 20px 32px}
 .rd-toolbar{display:flex;gap:6px;margin-bottom:12px;align-items:center;justify-content:space-between}
@@ -1027,9 +1083,13 @@ body{
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
     Schedule
   </button>
+  <button class="nav-btn" data-page="myraces">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    My Races
+  </button>
   <button class="nav-btn" data-page="raceday">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-    Race Management
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Race Mgmt <span style="font-size:.7em">🔒</span>
   </button>
   <button class="nav-btn" data-page="contacts">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
@@ -1282,6 +1342,14 @@ body{
   </div>
 </div>
 
+<!-- ====== MY RACES ====== -->
+<div class="page" id="pg-myraces">
+  <div class="page-head"><h1>My Races</h1><p id="myraces-sub">Races you are assigned to</p></div>
+  <div class="raceday-page">
+    <div id="myraces-content"></div>
+  </div>
+</div>
+
 <!-- ====== RACE DAY ====== -->
 <div class="page" id="pg-raceday">
   <div class="page-head"><h1>Race Day</h1><p>Manage lineups &amp; seat assignments</p></div>
@@ -1473,10 +1541,21 @@ const db=firebase.firestore();
 // Navigation
 const navBtns=document.querySelectorAll('.nav-btn');
 const pages=document.querySelectorAll('.page');
+const COACH_PASSWORD='Amir';
+function isCoachUnlocked(){return localStorage.getItem('mudbc-coach')==='1';}
 function goTo(id){
+  // Password gate for Race Management
+  if(id==='raceday'&&!isCoachUnlocked()){
+    const pw=prompt('Enter coach password to access Race Management:');
+    if(pw===null)return;
+    if(pw!==COACH_PASSWORD){showToast('Wrong password');return;}
+    localStorage.setItem('mudbc-coach','1');
+    showToast('Unlocked - coach mode');
+  }
   navBtns.forEach(b=>b.classList.toggle('active',b.dataset.page===id));
   pages.forEach(p=>p.classList.toggle('active',p.id==='pg-'+id));
   window.scrollTo(0,0);
+  if(id==='myraces')renderMyRaces();
 }
 navBtns.forEach(b=>b.addEventListener('click',()=>goTo(b.dataset.page)));
 document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>goTo(b.dataset.goto)));
@@ -2737,6 +2816,128 @@ renderPaddlers();renderRaceDay();renderYourNextRace();
     }
   });
 })();
+
+// ======== MY RACES TAB ========
+function renderMyRaces(){
+  const container=document.getElementById('myraces-content');
+  const sub=document.getElementById('myraces-sub');
+  if(!container)return;
+  container.textContent='';
+
+  if(!myPaddler){
+    sub.textContent='Pick your name to see your races';
+    const empty=document.createElement('div');empty.className='mr-empty-state';
+    empty.innerHTML='<div style="font-size:2rem;margin-bottom:8px">\u{1F464}</div><div>Pick your name from the Home page to see the races you are assigned to.</div>';
+    const btn=document.createElement('button');btn.textContent='Go to Home';
+    btn.addEventListener('click',()=>goTo('home'));
+    empty.appendChild(btn);
+    container.appendChild(empty);
+    return;
+  }
+
+  sub.textContent=myPaddler+' \u00B7 '+Object.keys(currentLineups).filter(id=>{
+    const l=currentLineups[id];
+    const all=Object.values(l.seats||{}).concat([l.drummer,l.sweep]);
+    return all.includes(myPaddler);
+  }).length+' race(s)';
+
+  const now=new Date();
+  const mine=RACE_DATA.map(r=>{
+    const l=currentLineups[raceId(r)];
+    if(!l)return null;
+    const all=Object.values(l.seats||{}).concat([l.drummer,l.sweep]);
+    if(!all.includes(myPaddler))return null;
+    let seat='';
+    Object.entries(l.seats||{}).forEach(([k,v])=>{if(v===myPaddler)seat='Seat '+k.slice(0,-1)+' '+(k.endsWith('L')?'Left':'Right');});
+    if(l.drummer===myPaddler)seat='Drummer';
+    if(l.sweep===myPaddler)seat='Sweep';
+    return {race:r,seat,lineup:l};
+  }).filter(x=>x).sort((a,b)=>new Date(a.race.d+'T'+a.race.t+':00+10:00')-new Date(b.race.d+'T'+b.race.t+':00+10:00'));
+
+  if(mine.length===0){
+    const empty=document.createElement('div');empty.className='mr-empty-state';
+    empty.innerHTML='<div style="font-size:2rem;margin-bottom:8px">\u{1F44B}</div><div>Hi '+myPaddler+'! No races assigned yet.<br>Your coach will add you to races soon.</div>';
+    container.appendChild(empty);
+    return;
+  }
+
+  mine.forEach(m=>{
+    const start=new Date(m.race.d+'T'+m.race.t+':00+10:00');
+    const end=new Date(m.race.d+'T'+m.race.end+':00+10:00');
+    const diff=start-now;
+    const isLive=now>=start&&now<end;
+    const isPast=now>=end;
+    const isNext=diff>0&&diff<30*60*1000;
+
+    const card=document.createElement('div');card.className='mr-card';
+    if(isLive)card.classList.add('live');
+    else if(isNext)card.classList.add('next');
+    else if(isPast)card.classList.add('past');
+
+    const head=document.createElement('div');head.className='mr-head';
+    const titleBlock=document.createElement('div');
+    const title=document.createElement('div');title.className='mr-title';title.textContent=m.race.title;
+    const tSplit=m.race.t.split(':');let hh=parseInt(tSplit[0]);const mm2=tSplit[1];const ap=hh>=12?'pm':'am';hh=hh%12||12;
+    const dayLbl={'2026-04-17':'Fri 17','2026-04-18':'Sat 18','2026-04-19':'Sun 19','2026-04-20':'Mon 20'}[m.race.d]||m.race.d;
+    const time=document.createElement('div');time.className='mr-time';time.textContent=dayLbl+' \u00B7 '+hh+':'+mm2+ap+' \u00B7 '+m.race.loc;
+    titleBlock.appendChild(title);titleBlock.appendChild(time);
+    const cd=document.createElement('div');cd.className='mr-cd';
+    if(isLive){cd.classList.add('live');cd.textContent='LIVE';}
+    else if(isPast){cd.classList.add('past');cd.textContent='done';}
+    else{
+      const mins=Math.round(diff/60000);
+      if(mins<60)cd.textContent='in '+mins+'m';
+      else{const h=Math.floor(mins/60),mm=mins%60;cd.textContent=mm?'in '+h+'h'+mm+'m':'in '+h+'h';}
+    }
+    head.appendChild(titleBlock);head.appendChild(cd);
+    card.appendChild(head);
+
+    const seatRow=document.createElement('div');seatRow.className='mr-seat';
+    seatRow.textContent='\u{1F6A3} Your spot: '+m.seat;
+    card.appendChild(seatRow);
+
+    // Expand lineup
+    const toggle=document.createElement('button');toggle.className='mr-lineup-toggle';
+    toggle.innerHTML='View full lineup <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>';
+    const body=document.createElement('div');body.className='mr-lineup-body';
+    toggle.addEventListener('click',()=>{
+      toggle.classList.toggle('open');body.classList.toggle('open');
+    });
+    card.appendChild(toggle);
+
+    // Build boat preview
+    const boat=document.createElement('div');boat.className='mr-boat-mini';
+    for(let i=1;i<=10;i++){
+      const row=document.createElement('div');row.className='mr-seat-row';
+      const num=document.createElement('span');num.textContent=i;
+      const L=document.createElement('div');L.className='mr-pos';
+      const R=document.createElement('div');R.className='mr-pos';
+      const lName=m.lineup.seats?(m.lineup.seats[i+'L']||''):'';
+      const rName=m.lineup.seats?(m.lineup.seats[i+'R']||''):'';
+      if(lName){L.textContent=lName;if(lName===myPaddler)L.classList.add('me');}else{L.textContent='\u2014';L.classList.add('empty');}
+      if(rName){R.textContent=rName;if(rName===myPaddler)R.classList.add('me');}else{R.textContent='\u2014';R.classList.add('empty');}
+      row.appendChild(num);row.appendChild(L);row.appendChild(R);
+      boat.appendChild(row);
+    }
+    const special=document.createElement('div');special.className='mr-special-mini';
+    const drum=document.createElement('div');drum.innerHTML='<strong>Drummer</strong>'+(m.lineup.drummer||'\u2014');
+    const sweep=document.createElement('div');sweep.innerHTML='<strong>Sweep</strong>'+(m.lineup.sweep||'\u2014');
+    special.appendChild(drum);special.appendChild(sweep);
+    boat.appendChild(special);
+    body.appendChild(boat);
+    card.appendChild(body);
+
+    container.appendChild(card);
+  });
+}
+
+// Re-render when lineup data changes and user is on My Races page
+const _origRenderRaceDay=renderRaceDay;
+renderRaceDay=function(){
+  _origRenderRaceDay();
+  if(document.getElementById('pg-myraces').classList.contains('active'))renderMyRaces();
+};
+setInterval(()=>{if(document.getElementById('pg-myraces').classList.contains('active'))renderMyRaces();},30000);
 
 // ======== LOADOUTS (saved lineup templates) ========
 const loadoutsRef=db.collection('loadouts');
