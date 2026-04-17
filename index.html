@@ -3073,6 +3073,20 @@ function saveAsLoadout(existing){
   const hasAnyone=(existing.seats&&Object.values(existing.seats).filter(x=>x).length>0)||existing.drummer||existing.sweep;
   if(!hasAnyone){showToast('Nothing to save - lineup is empty');return;}
 
+  // Build tag options from RACE_DATA
+  const tagOptions=[{value:'',label:'Save only (don\'t auto-apply)'}];
+  const categories=new Set(),stages=new Set(),distances=new Set();
+  RACE_DATA.forEach(r=>{
+    const titleOnly=r.title.replace(/Race\s+#?[\d\/\-]+\s*-?\s*/,'');
+    const p=parseRaceTitle(titleOnly);
+    if(p.category)categories.add(p.category);
+    if(p.stage)stages.add(p.stage);
+    if(p.distance)distances.add(p.distance);
+  });
+  [...categories].sort().forEach(c=>tagOptions.push({value:'cat:'+c,label:'All '+c+' races'}));
+  [...stages].sort().forEach(s=>tagOptions.push({value:'stage:'+s,label:'All '+s+' races'}));
+  [...distances].sort().forEach(d=>tagOptions.push({value:'dist:'+d,label:'All '+d+' races'}));
+
   const overlay=document.createElement('div');overlay.className='pp-overlay';
   overlay.style.animation='none';
   const sheet=document.createElement('div');sheet.className='pp-sheet';
@@ -3084,15 +3098,37 @@ function saveAsLoadout(existing){
   hint.textContent='Give this template a name so you can apply it to other races later.';
   head.appendChild(hint);
 
-  const form=document.createElement('form');
-  form.style.cssText='display:flex;gap:8px;margin-bottom:12px';
+  // Name input
+  const nameLbl=document.createElement('div');
+  nameLbl.style.cssText='font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px';
+  nameLbl.textContent='Template name';
   const input=document.createElement('input');
-  input.type='text';input.className='pp-search';input.style.flex='1';
+  input.type='text';input.className='pp-search';
   input.placeholder='e.g. Premier Mixed A';input.autocomplete='off';input.maxLength=60;
+  input.style.marginBottom='14px';
+
+  // Auto-apply selector
+  const tagLbl=document.createElement('div');
+  tagLbl.style.cssText='font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px';
+  tagLbl.textContent='Auto-apply to';
+  const select=document.createElement('select');
+  select.className='pp-search';
+  select.style.cssText='width:100%;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'2\'><path d=\'M6 9l6 6 6-6\'/></svg>");background-repeat:no-repeat;background-position:right 12px center;background-size:14px;padding-right:36px;margin-bottom:14px';
+  tagOptions.forEach(opt=>{
+    const o=document.createElement('option');
+    o.value=opt.value;o.textContent=opt.label;
+    select.appendChild(o);
+  });
+
+  const form=document.createElement('form');
+
   const saveBtn=document.createElement('button');
-  saveBtn.type='submit';saveBtn.textContent='Save';
-  saveBtn.style.cssText='background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:var(--r3);font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit';
-  form.appendChild(input);form.appendChild(saveBtn);
+  saveBtn.type='submit';saveBtn.textContent='Save template';
+  saveBtn.style.cssText='background:var(--blue);color:#fff;border:none;padding:12px 16px;border-radius:var(--r3);font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%';
+
+  form.appendChild(nameLbl);form.appendChild(input);
+  form.appendChild(tagLbl);form.appendChild(select);
+  form.appendChild(saveBtn);
 
   form.addEventListener('submit',e=>{
     e.preventDefault();
@@ -3100,19 +3136,48 @@ function saveAsLoadout(existing){
     if(!name){input.focus();return;}
     const cleanName=name.slice(0,60);
     const docId=cleanName.replace(/[^a-zA-Z0-9]/g,'_').toLowerCase();
-    loadoutsRef.doc(docId).set({
+    const loadoutData={
       name:cleanName,
       seats:existing.seats||{},
       drummer:existing.drummer||'',
       sweep:existing.sweep||'',
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-    }).then(()=>{overlay.remove();showToast('Template saved: '+cleanName);})
-    .catch(()=>showToast('Save failed - check connection'));
+    };
+    loadoutsRef.doc(docId).set(loadoutData).then(()=>{
+      const tag=select.value;
+      if(tag){
+        // Apply to all matching races
+        const [tagType,tagVal]=tag.split(':');
+        const matching=RACE_DATA.filter(r=>{
+          const titleOnly=r.title.replace(/Race\s+#?[\d\/\-]+\s*-?\s*/,'');
+          const p=parseRaceTitle(titleOnly);
+          return(tagType==='cat'&&p.category===tagVal)||(tagType==='stage'&&p.stage===tagVal)||(tagType==='dist'&&p.distance===tagVal);
+        });
+        const batch=db.batch();
+        matching.forEach(r=>{
+          const rid=raceId(r);
+          batch.set(lineupsRef.doc(rid),{
+            raceId:rid,
+            seats:loadoutData.seats,
+            drummer:loadoutData.drummer||firebase.firestore.FieldValue.delete(),
+            sweep:loadoutData.sweep||firebase.firestore.FieldValue.delete(),
+            updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+          },{merge:true});
+        });
+        batch.commit().then(()=>{
+          overlay.remove();
+          showToast('Saved + applied to '+matching.length+' race'+(matching.length===1?'':'s'));
+        }).catch(()=>showToast('Save succeeded but bulk apply failed'));
+      }else{
+        overlay.remove();
+        showToast('Template saved: '+cleanName);
+      }
+    }).catch(()=>showToast('Save failed - check connection'));
   });
 
   const cancel=document.createElement('button');
   cancel.type='button';cancel.textContent='Cancel';
-  cancel.style.cssText='background:none;border:none;color:var(--text3);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;width:100%;padding:10px';
+  cancel.style.cssText='background:none;border:none;color:var(--text3);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;width:100%;padding:10px;margin-top:4px';
   cancel.addEventListener('click',()=>overlay.remove());
 
   head.appendChild(form);head.appendChild(cancel);
