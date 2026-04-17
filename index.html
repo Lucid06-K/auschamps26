@@ -1543,19 +1543,61 @@ const navBtns=document.querySelectorAll('.nav-btn');
 const pages=document.querySelectorAll('.page');
 const COACH_PASSWORD='Amir';
 function isCoachUnlocked(){return localStorage.getItem('mudbc-coach')==='1';}
-function goTo(id){
-  // Password gate for Race Management
-  if(id==='raceday'&&!isCoachUnlocked()){
-    const pw=prompt('Enter coach password to access Race Management:');
-    if(pw===null)return;
-    if(pw!==COACH_PASSWORD){showToast('Wrong password');return;}
-    localStorage.setItem('mudbc-coach','1');
-    showToast('Unlocked - coach mode');
-  }
+function doGoTo(id){
   navBtns.forEach(b=>b.classList.toggle('active',b.dataset.page===id));
   pages.forEach(p=>p.classList.toggle('active',p.id==='pg-'+id));
   window.scrollTo(0,0);
   if(id==='myraces')renderMyRaces();
+}
+function goTo(id){
+  if(id==='raceday'&&!isCoachUnlocked()){
+    showPasswordModal();return;
+  }
+  doGoTo(id);
+}
+function showPasswordModal(){
+  const overlay=document.createElement('div');overlay.className='pp-overlay';
+  const sheet=document.createElement('div');sheet.className='pp-sheet';
+  sheet.style.borderRadius='16px 16px 0 0';
+  const head=document.createElement('div');head.className='pp-head';
+  const h=document.createElement('h4');h.innerHTML='\u{1F512} Coach Access';head.appendChild(h);
+  const hint=document.createElement('div');
+  hint.style.cssText='font-size:.78rem;color:var(--text2);margin:8px 0 12px;line-height:1.5';
+  hint.textContent='Race Management is restricted to coaches. Enter the coach password to unlock.';
+  head.appendChild(hint);
+  const form=document.createElement('form');
+  form.style.cssText='display:flex;gap:8px;margin-bottom:12px';
+  const input=document.createElement('input');
+  input.type='password';input.placeholder='Enter password';
+  input.autocomplete='off';input.className='pp-search';
+  input.style.flex='1';
+  const btn=document.createElement('button');
+  btn.type='submit';btn.textContent='Unlock';
+  btn.style.cssText='background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:var(--r3);font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit';
+  const err=document.createElement('div');
+  err.style.cssText='color:var(--red);font-size:.78rem;font-weight:600;min-height:20px;text-align:center';
+  form.appendChild(input);form.appendChild(btn);
+  form.addEventListener('submit',e=>{
+    e.preventDefault();
+    if(input.value===COACH_PASSWORD){
+      localStorage.setItem('mudbc-coach','1');
+      overlay.remove();showToast('Unlocked - coach mode');
+      doGoTo('raceday');
+    }else{
+      err.textContent='Wrong password';
+      input.value='';input.focus();
+      setTimeout(()=>{err.textContent='';},2000);
+    }
+  });
+  const cancel=document.createElement('button');
+  cancel.type='button';cancel.textContent='Cancel';
+  cancel.style.cssText='background:none;border:none;color:var(--text3);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;width:100%;padding:10px';
+  cancel.addEventListener('click',()=>overlay.remove());
+  head.appendChild(form);head.appendChild(err);head.appendChild(cancel);
+  sheet.appendChild(head);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  overlay.appendChild(sheet);document.body.appendChild(overlay);
+  setTimeout(()=>input.focus(),100);
 }
 navBtns.forEach(b=>b.addEventListener('click',()=>goTo(b.dataset.page)));
 document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>goTo(b.dataset.goto)));
