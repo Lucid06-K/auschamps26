@@ -2610,6 +2610,18 @@ function openLineupEditor(race){
 
   const boat=document.createElement('div');boat.className='le-boat';
 
+  // Map to track seat DOM elements so we can refresh them after moves
+  const seatElMap={};
+  function refreshAllSeats(){
+    Object.entries(seatElMap).forEach(([k,info])=>{
+      let val='';
+      if(k==='drummer')val=existing.drummer||'';
+      else if(k==='sweep')val=existing.sweep||'';
+      else val=(existing.seats&&existing.seats[k])||'';
+      renderSeatContent(info.el,val,info.onClear,conflicts.includes(val));
+    });
+  }
+
   // Helper to update a seat element in-place after picking
   function renderSeatContent(seatEl,name,onClear,isConflict){
     seatEl.textContent='';
@@ -2646,10 +2658,11 @@ function openLineupEditor(race){
     renderSeatContent(drumSeat,'',clearDrum,false);
   };
   renderSeatContent(drumSeat,existing.drummer||'',clearDrum,conflicts.includes(existing.drummer));
+  seatElMap['drummer']={el:drumSeat,onClear:clearDrum};
   drumSeat.addEventListener('click',()=>pickPaddler(race,'drummer',existing.drummer,chosen=>{
     saveLineupSeat(id,'drummer',chosen,existing);
     existing.drummer=chosen;
-    renderSeatContent(drumSeat,chosen,clearDrum,false);
+    refreshAllSeats();
   }));
   drumWrap.appendChild(drumLbl);drumWrap.appendChild(drumSeat);
   boat.appendChild(drumWrap);
@@ -2673,11 +2686,12 @@ function openLineupEditor(race){
       };
       const name=existing.seats[key]||'';
       renderSeatContent(seat,name,clearSeat,conflicts.includes(name));
+      seatElMap[key]={el:seat,onClear:clearSeat};
       seat.addEventListener('click',()=>pickPaddler(race,key,existing.seats[key]||'',(chosen)=>{
         saveLineupSeat(id,key,chosen,existing);
         if(!existing.seats)existing.seats={};
         if(chosen)existing.seats[key]=chosen;else delete existing.seats[key];
-        renderSeatContent(seat,chosen,clearSeat,false);
+        refreshAllSeats();
       }));
       r.appendChild(seat);
     });
@@ -2694,10 +2708,11 @@ function openLineupEditor(race){
     renderSeatContent(swSeat,'',clearSweep,false);
   };
   renderSeatContent(swSeat,existing.sweep||'',clearSweep,conflicts.includes(existing.sweep));
+  seatElMap['sweep']={el:swSeat,onClear:clearSweep};
   swSeat.addEventListener('click',()=>pickPaddler(race,'sweep',existing.sweep,chosen=>{
     saveLineupSeat(id,'sweep',chosen,existing);
     existing.sweep=chosen;
-    renderSeatContent(swSeat,chosen,clearSweep,false);
+    refreshAllSeats();
   }));
   swWrap.appendChild(swLbl);swWrap.appendChild(swSeat);
   boat.appendChild(swWrap);
@@ -2766,14 +2781,37 @@ function openLineupEditor(race){
 
 function saveLineupSeat(id,key,chosen,existing){
   const data={raceId:id,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  // Auto-remove the chosen paddler from any other position in this lineup
+  const seats={...(existing.seats||{})};
+  let removedFrom='';
+  if(chosen){
+    // Clear from other seats
+    Object.keys(seats).forEach(k=>{
+      if(k!==key&&seats[k]===chosen){delete seats[k];removedFrom='seat '+k;}
+    });
+    // Clear from drummer/sweep if needed
+    if(key!=='drummer'&&existing.drummer===chosen){
+      data.drummer=firebase.firestore.FieldValue.delete();
+      existing.drummer='';removedFrom='drummer';
+    }
+    if(key!=='sweep'&&existing.sweep===chosen){
+      data.sweep=firebase.firestore.FieldValue.delete();
+      existing.sweep='';removedFrom='sweep';
+    }
+  }
   if(key==='drummer'||key==='sweep'){
     data[key]=chosen||firebase.firestore.FieldValue.delete();
+    // Still write seats if we removed someone from a seat
+    if(removedFrom.startsWith('seat ')){data.seats=seats;existing.seats=seats;}
   }else{
-    const seats={...(existing.seats||{})};
     if(chosen)seats[key]=chosen;else delete seats[key];
     data.seats=seats;
+    existing.seats=seats;
   }
-  lineupsRef.doc(id).set(data,{merge:true}).then(()=>showToast(chosen?'Assigned '+chosen:'Cleared'));
+  lineupsRef.doc(id).set(data,{merge:true}).then(()=>{
+    const msg=chosen?(removedFrom?'Moved '+chosen+' from '+removedFrom:'Assigned '+chosen):'Cleared';
+    showToast(msg);
+  });
 }
 
 function checkConflicts(race,lineup){
