@@ -720,6 +720,17 @@ body{
 .rd-status.next{background:var(--gold);color:#000}
 .rd-status.result{background:var(--gold);color:#000;font-size:.72rem}
 
+/* Lineup editor exit button */
+.le-exit-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;margin-top:24px;padding:14px 16px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r2);color:var(--text);
+  font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;
+  transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.le-exit-btn:active{transform:scale(.98);background:var(--bg4)}
+
 /* Loadouts toolbar in lineup editor */
 .le-loadouts{
   display:flex;gap:6px;margin-bottom:14px;
@@ -2772,6 +2783,13 @@ function openLineupEditor(race){
     resBox.appendChild(resRow);
     body.appendChild(resBox);
   }
+
+  // Exit button at bottom
+  const exitBtn=document.createElement('button');
+  exitBtn.className='le-exit-btn';
+  exitBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M18 6L6 18M6 6l12 12"/></svg> Close lineup editor';
+  exitBtn.addEventListener('click',()=>overlay.remove());
+  body.appendChild(exitBtn);
 
   sheet.appendChild(header);sheet.appendChild(body);
   overlay.appendChild(sheet);
