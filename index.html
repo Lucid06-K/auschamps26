@@ -871,15 +871,18 @@ body{
 /* Paddler picker modal */
 .pp-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;
-  display:flex;align-items:flex-end;justify-content:center;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding-top:calc(20px + env(safe-area-inset-top,0px));
   animation:toastIn .2s ease;
 }
 .pp-sheet{
-  background:var(--bg);width:100%;max-width:480px;max-height:70vh;
+  background:var(--bg);width:100%;max-width:480px;
+  height:calc(100dvh - 40px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+  max-height:600px;
   border-radius:16px 16px 0 0;overflow:hidden;display:flex;flex-direction:column;
-  padding-bottom:env(safe-area-inset-bottom,0px);
+  border:1px solid var(--border);
 }
-.pp-head{padding:16px 20px 8px;border-bottom:1px solid var(--border)}
+.pp-head{padding:16px 20px 8px;border-bottom:1px solid var(--border);flex-shrink:0;position:sticky;top:0;background:var(--bg);z-index:2}
 .pp-head h4{font-size:.95rem;font-weight:700;margin-bottom:8px}
 .pp-search{
   width:100%;background:var(--bg3);border:1px solid var(--border);
