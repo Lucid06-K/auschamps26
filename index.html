@@ -526,6 +526,263 @@ body{
 }
 .maps-link:active{opacity:.7}
 
+/* ---- Race Day ---- */
+.raceday-page{padding:0 20px 32px}
+.rd-toolbar{display:flex;gap:6px;margin-bottom:12px;align-items:center;justify-content:space-between}
+.rd-filters{display:flex;gap:6px;flex:1;overflow-x:auto;scrollbar-width:none}
+.rd-filters::-webkit-scrollbar{display:none}
+.rd-filter{
+  flex-shrink:0;padding:8px 14px;border-radius:100px;
+  background:var(--bg2);border:1px solid var(--border);
+  color:var(--text2);font-size:.75rem;font-weight:600;
+  cursor:pointer;transition:all .15s;font-family:inherit;
+  -webkit-tap-highlight-color:transparent;
+}
+.rd-filter.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.rd-roster-btn{
+  background:var(--bg2);border:1px solid var(--border);color:var(--text);
+  padding:8px 12px;border-radius:var(--r3);cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;gap:4px;font-size:.72rem;font-weight:600;
+  -webkit-tap-highlight-color:transparent;flex-shrink:0;
+}
+.rd-roster-btn svg{width:14px;height:14px}
+.rd-day-label{
+  font-size:.68rem;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.1em;margin:16px 0 8px;
+}
+.rd-race{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.rd-race:active{background:var(--bg3)}
+.rd-race.past{opacity:.45}
+.rd-race.live{
+  border-color:var(--green);background:linear-gradient(135deg,rgba(34,197,94,.1),rgba(34,197,94,.02));
+  animation:pulseGreen 2s ease-in-out infinite;
+}
+.rd-race.next{
+  border-color:var(--gold);background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02));
+}
+@keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}50%{box-shadow:0 0 0 4px rgba(34,197,94,.15)}}
+.rd-time{
+  flex-shrink:0;min-width:56px;text-align:center;
+}
+.rd-time-main{font-size:.82rem;font-weight:700;color:var(--blue)}
+.rd-time-sub{font-size:.65rem;color:var(--text3);margin-top:2px}
+.rd-info{flex:1;min-width:0}
+.rd-race-num{font-size:.68rem;font-weight:700;color:var(--text3);margin-bottom:2px}
+.rd-race-title{font-size:.85rem;font-weight:700;line-height:1.3}
+.rd-status{
+  flex-shrink:0;padding:4px 10px;border-radius:100px;
+  font-size:.65rem;font-weight:700;
+}
+.rd-status.empty{background:var(--bg3);color:var(--text3)}
+.rd-status.partial{background:var(--gold-soft);color:var(--gold)}
+.rd-status.full{background:var(--green-soft);color:var(--green)}
+.rd-status.live{background:var(--green);color:#fff}
+.rd-status.next{background:var(--gold);color:#000}
+
+/* ---- Lineup Editor ---- */
+.le-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;
+  display:flex;align-items:flex-end;justify-content:center;
+  animation:toastIn .2s ease;
+}
+.le-sheet{
+  background:var(--bg);width:100%;max-width:600px;height:95vh;
+  border-radius:16px 16px 0 0;overflow-y:auto;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+}
+.le-header{
+  position:sticky;top:0;background:var(--bg);z-index:10;
+  padding:16px 20px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.le-close{
+  background:var(--bg2);border:1px solid var(--border);color:var(--text);
+  width:36px;height:36px;border-radius:50%;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+  flex-shrink:0;font-family:inherit;
+}
+.le-title{flex:1;min-width:0}
+.le-title h3{font-size:1rem;font-weight:800;line-height:1.2}
+.le-title p{font-size:.72rem;color:var(--text2);margin-top:2px}
+.le-body{padding:20px}
+.le-boat{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px 16px;margin-bottom:16px;
+}
+.le-boat-labels{
+  display:grid;grid-template-columns:40px 1fr 1fr;gap:10px;margin-bottom:10px;
+  font-size:.62rem;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.1em;text-align:center;
+}
+.le-boat-labels span:first-child{text-align:left}
+.le-row{
+  display:grid;grid-template-columns:40px 1fr 1fr;gap:10px;margin-bottom:8px;
+  align-items:center;
+}
+.le-row-num{
+  font-size:.85rem;font-weight:700;color:var(--text2);text-align:center;
+}
+.le-seat{
+  background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r3);
+  padding:12px 10px;text-align:center;cursor:pointer;transition:all .15s;
+  min-height:44px;display:flex;align-items:center;justify-content:center;
+  font-size:.82rem;font-weight:600;color:var(--text3);
+  -webkit-tap-highlight-color:transparent;word-break:break-word;
+}
+.le-seat.filled{
+  background:var(--blue-soft);border-color:var(--blue-border);border-style:solid;
+  color:var(--text);
+}
+.le-seat.conflict{
+  background:var(--red-soft);border-color:var(--red-border);
+  color:var(--red);
+}
+.le-seat:active{transform:scale(.97)}
+.le-special{
+  display:grid;grid-template-columns:80px 1fr;gap:10px;
+  align-items:center;margin-top:8px;padding-top:12px;
+  border-top:1px solid var(--border);
+}
+.le-special-lbl{font-size:.7rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em}
+.le-notes{
+  width:100%;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r3);padding:10px 12px;color:var(--text);
+  font-size:.82rem;font-family:inherit;resize:vertical;min-height:60px;
+}
+.le-notes:focus{outline:none;border-color:var(--blue)}
+.le-conflict-banner{
+  background:var(--red-soft);border:1px solid var(--red-border);
+  color:var(--red);padding:10px 14px;border-radius:var(--r3);
+  font-size:.8rem;font-weight:600;margin-bottom:12px;
+}
+
+/* Paddler picker modal */
+.pp-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;
+  display:flex;align-items:flex-end;justify-content:center;
+  animation:toastIn .2s ease;
+}
+.pp-sheet{
+  background:var(--bg);width:100%;max-width:480px;max-height:70vh;
+  border-radius:16px 16px 0 0;overflow:hidden;display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.pp-head{padding:16px 20px 8px;border-bottom:1px solid var(--border)}
+.pp-head h4{font-size:.95rem;font-weight:700;margin-bottom:8px}
+.pp-search{
+  width:100%;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r3);padding:10px 14px;color:var(--text);
+  font-size:.85rem;font-family:inherit;
+}
+.pp-search:focus{outline:none;border-color:var(--blue)}
+.pp-list{flex:1;overflow-y:auto;padding:8px 0}
+.pp-item{
+  padding:14px 20px;cursor:pointer;display:flex;align-items:center;
+  justify-content:space-between;font-size:.88rem;
+  -webkit-tap-highlight-color:transparent;
+}
+.pp-item:active{background:var(--bg3)}
+.pp-item.taken{color:var(--text3)}
+.pp-item.taken small{font-size:.7rem;color:var(--text3);margin-left:8px}
+.pp-remove{
+  display:block;width:100%;padding:14px;background:var(--red-soft);
+  color:var(--red);border:none;font-size:.85rem;font-weight:700;
+  cursor:pointer;font-family:inherit;border-top:1px solid var(--border);
+}
+
+/* ---- Paddlers page ---- */
+.paddlers-page{padding:0 20px 32px}
+.pd-add-wrap{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px;margin-bottom:16px;
+}
+.pd-add-row{display:flex;gap:8px;margin-bottom:10px}
+.pd-add-row input{
+  flex:1;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r3);padding:10px 14px;color:var(--text);
+  font-size:.85rem;font-family:inherit;
+}
+.pd-add-row input:focus{outline:none;border-color:var(--blue)}
+.pd-add-row button{
+  background:var(--blue);color:#fff;border:none;padding:0 16px;
+  border-radius:var(--r3);font-weight:600;cursor:pointer;font-family:inherit;
+}
+.pd-bulk-toggle{
+  background:none;border:none;color:var(--blue);font-size:.78rem;
+  font-weight:600;cursor:pointer;font-family:inherit;padding:4px 0;
+}
+.pd-bulk-wrap{display:none;margin-top:10px}
+.pd-bulk-wrap.open{display:block}
+.pd-bulk-wrap textarea{
+  width:100%;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r3);padding:10px 14px;color:var(--text);
+  font-size:.85rem;font-family:inherit;min-height:100px;resize:vertical;
+  margin-bottom:8px;
+}
+.pd-bulk-wrap textarea:focus{outline:none;border-color:var(--blue)}
+.pd-item{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);
+  padding:12px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;
+}
+.pd-name{flex:1;font-size:.88rem;font-weight:500}
+.pd-count{font-size:.7rem;color:var(--text3);background:var(--bg3);padding:3px 8px;border-radius:100px}
+.pd-del{
+  background:var(--red-soft);color:var(--red);border:none;
+  width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;
+  font-family:inherit;
+}
+
+/* Your Next Race home card */
+.ynr-card{
+  background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(245,158,11,.03));
+  border:1px solid var(--gold-border);border-radius:var(--r);
+  padding:18px;margin-bottom:16px;
+}
+.ynr-head{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;
+}
+.ynr-label{
+  font-size:.68rem;font-weight:700;color:var(--gold);
+  text-transform:uppercase;letter-spacing:.1em;
+}
+.ynr-cd{
+  font-size:.75rem;font-weight:700;color:var(--gold);
+  background:var(--gold-soft);padding:4px 10px;border-radius:100px;
+}
+.ynr-title{font-size:1rem;font-weight:800;margin-bottom:4px}
+.ynr-time{font-size:.82rem;color:var(--text2);margin-bottom:10px}
+.ynr-seat{
+  background:var(--bg3);padding:8px 12px;border-radius:var(--r3);
+  font-size:.85rem;font-weight:600;margin-bottom:10px;display:inline-block;
+}
+.ynr-lineup-btn{
+  background:none;border:1px solid var(--border);color:var(--text);
+  padding:8px 14px;border-radius:var(--r3);font-size:.78rem;font-weight:600;
+  cursor:pointer;font-family:inherit;width:100%;
+}
+.ynr-pick-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;background:var(--bg2);border:1px solid var(--border);
+  padding:14px;border-radius:var(--r);color:var(--text);font-size:.85rem;
+  font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:16px;
+}
+
+/* Home rooms collapsible */
+.rooms-toggle{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px 18px;width:100%;display:flex;align-items:center;gap:14px;
+  cursor:pointer;color:var(--text);font-family:inherit;text-align:left;
+  margin-bottom:12px;
+}
+.rooms-toggle svg{width:16px;height:16px;margin-left:auto;transition:transform .2s}
+.rooms-toggle.open svg{transform:rotate(180deg)}
+.rooms-body{display:none;padding:0 0 16px}
+.rooms-body.open{display:block}
+
 /* ---- Confetti ---- */
 .confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:9999}
 .confetti-p{
@@ -552,9 +809,9 @@ body{
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
     Schedule
   </button>
-  <button class="nav-btn" data-page="rooms">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7v11a2 2 0 002 2h14a2 2 0 002-2V7"/><path d="M21 7L12 2 3 7"/></svg>
-    Rooms
+  <button class="nav-btn" data-page="raceday">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+    Race Day
   </button>
   <button class="nav-btn" data-page="packing">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
@@ -574,6 +831,8 @@ body{
       <h1 class="hero-title">AusChamps<span>2 0 2 6</span></h1>
       <p class="hero-venue"><strong>Lake Kawana</strong>, Sunshine Coast QLD<br>17 &ndash; 20 April 2026</p>
     </div>
+
+    <div id="ynr-container"></div>
 
     <div id="live-tracker"></div>
 
@@ -611,14 +870,15 @@ body{
         </div>
       </div>
       <div id="wx-days" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:-4px;margin-bottom:12px"></div>
-      <div class="info-card">
-        <div class="info-icon accom">&#x1F3E8;</div>
-        <div class="info-body">
-          <h3>Pelican Waters Golf Resort</h3>
-          <p>26 members across 7 rooms.</p>
-          <a href="https://maps.google.com/?q=38+Mahogany+Drive+Caloundra+4551+Australia" target="_blank" rel="noopener" class="maps-link">&#x1F4CD; 38 Mahogany Drive, Caloundra &rarr;</a>
+      <button class="rooms-toggle" id="roomsToggle">
+        <span style="font-size:1.1rem">&#x1F3E8;</span>
+        <div style="flex:1">
+          <div style="font-size:.88rem;font-weight:700">Pelican Waters Golf Resort</div>
+          <div style="font-size:.72rem;color:var(--text2)">26 members &middot; 7 rooms &middot; tap to expand</div>
         </div>
-      </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="rooms-body" id="roomsBody"></div>
     </div>
   </div>
 </div>
@@ -789,6 +1049,48 @@ body{
     <div class="ev-card">
       <div class="ev-top"><div class="ev-time">8:00 PM</div><div class="ev-info"><div class="ev-title">Depart to Melbourne</div><div class="ev-loc">&#x2708; Flight JQ799 &mdash; Sunshine Coast Airport (MCY)</div><span class="ev-tag logistics">Travel</span></div></div>
     </div>
+  </div>
+</div>
+
+<!-- ====== RACE DAY ====== -->
+<div class="page" id="pg-raceday">
+  <div class="page-head"><h1>Race Day</h1><p>Manage lineups &amp; seat assignments</p></div>
+  <div class="raceday-page">
+    <div class="rd-toolbar">
+      <div class="rd-filters" id="rdFilters">
+        <button class="rd-filter active" data-filter="all">All</button>
+        <button class="rd-filter" data-filter="today">Today</button>
+        <button class="rd-filter" data-filter="mine">My Races</button>
+      </div>
+      <button class="rd-roster-btn" data-goto="paddlers">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Roster
+      </button>
+    </div>
+    <div id="rdList"></div>
+  </div>
+</div>
+
+<!-- ====== PADDLERS ====== -->
+<div class="page" id="pg-paddlers">
+  <div class="page-head" style="display:flex;align-items:center;gap:12px">
+    <button class="le-close" data-goto="raceday" aria-label="Back">&larr;</button>
+    <div><h1 style="font-size:1.3rem">Roster</h1><p id="pdCount">0 paddlers</p></div>
+  </div>
+  <div class="paddlers-page">
+    <div class="pd-add-wrap">
+      <div class="pd-add-row">
+        <input type="text" id="pdNew" placeholder="Add a name" autocomplete="off">
+        <button id="pdAddBtn">Add</button>
+      </div>
+      <button class="pd-bulk-toggle" id="pdBulkToggle">+ Bulk add (paste multiple names)</button>
+      <div class="pd-bulk-wrap" id="pdBulkWrap">
+        <textarea id="pdBulkInput" placeholder="Paste names, one per line..."></textarea>
+        <button id="pdBulkBtn" style="background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:var(--r3);font-weight:600;cursor:pointer;font-family:inherit;width:100%">Add all</button>
+      </div>
+    </div>
+    <input type="text" id="pdSearch" placeholder="Search roster..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r3);padding:10px 14px;color:var(--text);font-size:.85rem;font-family:inherit;margin-bottom:10px">
+    <div id="pdList"></div>
   </div>
 </div>
 
@@ -1560,6 +1862,523 @@ const ALLRACES=[];
     }
   },err=>{
     console.warn('Firestore listener error:',err);
+  });
+})();
+
+// ======== RACE DAY / LINEUPS ========
+const DEFAULT_ROSTER=['Catherine','Cayla','Hilary','Leqi','Yan Tong','Yifan','Phi','Jim','Khai','Nathan','Hakeem','Shibli','Kai','Rookie','Anh','TK','Farbod','Joshua','Jeffries'];
+const RACE_DATA=[
+  // Only actual races from ALLRACES
+];
+// Build RACE_DATA from the EVENTS list
+ALLRACES.forEach(e=>{if(e.title.startsWith('Race'))RACE_DATA.push(e);});
+
+const lineupsRef=db.collection('lineups');
+const rosterRef=db.collection('paddlers').doc('roster');
+let currentRoster=[...DEFAULT_ROSTER];
+let currentLineups={};
+let myPaddler=localStorage.getItem('mudbc-me')||null;
+
+// Seed roster if not exists
+rosterRef.get().then(doc=>{
+  if(!doc.exists){
+    rosterRef.set({names:DEFAULT_ROSTER,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  }
+});
+
+// Listen to roster changes
+rosterRef.onSnapshot(doc=>{
+  if(doc.exists&&doc.data().names){
+    currentRoster=doc.data().names;
+    renderPaddlers();
+    renderRaceDay();
+    renderYourNextRace();
+  }
+});
+
+// Listen to lineup changes
+lineupsRef.onSnapshot(snap=>{
+  currentLineups={};
+  snap.forEach(doc=>{currentLineups[doc.id]=doc.data();});
+  renderRaceDay();
+  renderYourNextRace();
+});
+
+// ======== PADDLERS PAGE ========
+function renderPaddlers(){
+  const list=document.getElementById('pdList');
+  if(!list)return;
+  const search=(document.getElementById('pdSearch').value||'').toLowerCase();
+  list.textContent='';
+  const filtered=currentRoster.filter(n=>n.toLowerCase().includes(search));
+  document.getElementById('pdCount').textContent=currentRoster.length+' paddlers';
+  if(filtered.length===0){
+    const empty=document.createElement('div');
+    empty.style.cssText='text-align:center;color:var(--text3);padding:20px;font-size:.85rem';
+    empty.textContent=search?'No matches':'No paddlers yet';
+    list.appendChild(empty);
+    return;
+  }
+  filtered.forEach(name=>{
+    const row=document.createElement('div');
+    row.className='pd-item';
+    const nm=document.createElement('div');
+    nm.className='pd-name';nm.textContent=name;
+    const count=countPaddlerRaces(name);
+    const ct=document.createElement('div');
+    ct.className='pd-count';ct.textContent=count+' race'+(count===1?'':'s');
+    const del=document.createElement('button');
+    del.className='pd-del';del.textContent='\u00D7';del.setAttribute('aria-label','Remove '+name);
+    del.addEventListener('click',()=>{
+      const newNames=currentRoster.filter(n=>n!==name);
+      rosterRef.set({names:newNames,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      showToast('Removed '+name);
+    });
+    row.appendChild(nm);row.appendChild(ct);row.appendChild(del);
+    list.appendChild(row);
+  });
+}
+
+function countPaddlerRaces(name){
+  let n=0;
+  Object.values(currentLineups).forEach(l=>{
+    const all=Object.values(l.seats||{}).concat([l.drummer,l.sweep]);
+    if(all.includes(name))n++;
+  });
+  return n;
+}
+
+document.getElementById('pdAddBtn').addEventListener('click',()=>{
+  const inp=document.getElementById('pdNew');
+  const name=inp.value.trim();
+  if(!name)return;
+  if(currentRoster.includes(name)){showToast('Already in roster');return;}
+  const newNames=[...currentRoster,name];
+  rosterRef.set({names:newNames,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  inp.value='';showToast('Added '+name);
+});
+document.getElementById('pdNew').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('pdAddBtn').click();});
+document.getElementById('pdSearch').addEventListener('input',renderPaddlers);
+document.getElementById('pdBulkToggle').addEventListener('click',()=>{
+  document.getElementById('pdBulkWrap').classList.toggle('open');
+});
+document.getElementById('pdBulkBtn').addEventListener('click',()=>{
+  const txt=document.getElementById('pdBulkInput').value;
+  const names=txt.split('\n').map(n=>n.trim()).filter(n=>n&&!currentRoster.includes(n));
+  if(names.length===0){showToast('No new names');return;}
+  const newNames=[...currentRoster,...names];
+  rosterRef.set({names:newNames,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  document.getElementById('pdBulkInput').value='';
+  document.getElementById('pdBulkWrap').classList.remove('open');
+  showToast('Added '+names.length+' paddlers');
+});
+
+// ======== RACE DAY PAGE ========
+let rdFilter='all';
+function renderRaceDay(){
+  const list=document.getElementById('rdList');
+  if(!list)return;
+  list.textContent='';
+  const now=new Date();
+  const today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  let races=[...RACE_DATA];
+  if(rdFilter==='today')races=races.filter(r=>r.d===today);
+  if(rdFilter==='mine'&&myPaddler){
+    races=races.filter(r=>{
+      const l=currentLineups[raceId(r)];
+      if(!l)return false;
+      const all=Object.values(l.seats||{}).concat([l.drummer,l.sweep]);
+      return all.includes(myPaddler);
+    });
+  }
+  // Group by day
+  const days={};
+  races.forEach(r=>{(days[r.d]=days[r.d]||[]).push(r);});
+  const dayOrder=Object.keys(days).sort();
+  if(dayOrder.length===0){
+    const empty=document.createElement('div');
+    empty.style.cssText='text-align:center;color:var(--text3);padding:40px 20px;font-size:.88rem';
+    empty.textContent=rdFilter==='mine'&&!myPaddler?'Pick your name on the Home page first':'No races match';
+    list.appendChild(empty);
+    return;
+  }
+  const dayLabels={'2026-04-17':'Fri 17 Apr','2026-04-18':'Sat 18 Apr','2026-04-19':'Sun 19 Apr','2026-04-20':'Mon 20 Apr'};
+  dayOrder.forEach(d=>{
+    const hdr=document.createElement('div');
+    hdr.className='rd-day-label';hdr.textContent=dayLabels[d]||d;
+    list.appendChild(hdr);
+    days[d].forEach(r=>list.appendChild(renderRaceRow(r,now)));
+  });
+}
+
+function raceId(r){return (r.d+'_'+r.t).replace(/[:\-]/g,'');}
+
+function renderRaceRow(r,now){
+  const row=document.createElement('div');
+  row.className='rd-race';
+  const start=new Date(r.d+'T'+r.t+':00+10:00');
+  const end=new Date(r.d+'T'+r.end+':00+10:00');
+  const diff=start-now;
+  const isLive=now>=start&&now<end;
+  const isPast=now>=end;
+  const isNext=diff>0&&diff<30*60*1000;
+  if(isPast)row.classList.add('past');
+  if(isLive)row.classList.add('live');
+  else if(isNext)row.classList.add('next');
+
+  const time=document.createElement('div');time.className='rd-time';
+  const tm=document.createElement('div');tm.className='rd-time-main';
+  const tSplit=r.t.split(':');let h=parseInt(tSplit[0]);const m=tSplit[1];const ap=h>=12?'pm':'am';h=h%12||12;
+  tm.textContent=h+':'+m+ap;
+  const ts=document.createElement('div');ts.className='rd-time-sub';
+  if(isLive)ts.textContent='LIVE';
+  else if(isNext){const mins=Math.round(diff/60000);ts.textContent='in '+mins+'m';}
+  else if(isPast)ts.textContent='done';
+  else ts.textContent='';
+  time.appendChild(tm);time.appendChild(ts);
+
+  const info=document.createElement('div');info.className='rd-info';
+  const num=document.createElement('div');num.className='rd-race-num';
+  const raceMatch=r.title.match(/Race\s+(#?[\d\/\-]+)/);
+  num.textContent=raceMatch?raceMatch[1]:'';
+  const title=document.createElement('div');title.className='rd-race-title';
+  title.textContent=r.title.replace(/Race\s+#?[\d\/\-]+\s*-?\s*/,'');
+  info.appendChild(num);info.appendChild(title);
+
+  const id=raceId(r);
+  const lineup=currentLineups[id];
+  const seatCount=lineup?Object.values(lineup.seats||{}).filter(x=>x).length:0;
+  const hasDrummer=lineup&&lineup.drummer;
+  const hasSweep=lineup&&lineup.sweep;
+  const total=seatCount+(hasDrummer?1:0)+(hasSweep?1:0);
+  const status=document.createElement('div');
+  status.className='rd-status';
+  if(isLive){status.classList.add('live');status.textContent='LIVE';}
+  else if(isNext){status.classList.add('next');status.textContent='NEXT';}
+  else if(total===12){status.classList.add('full');status.textContent='12/12';}
+  else if(total>0){status.classList.add('partial');status.textContent=total+'/12';}
+  else{status.classList.add('empty');status.textContent='not set';}
+
+  row.appendChild(time);row.appendChild(info);row.appendChild(status);
+  row.addEventListener('click',()=>openLineupEditor(r));
+  return row;
+}
+
+document.querySelectorAll('.rd-filter').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.rd-filter').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    rdFilter=btn.dataset.filter;
+    renderRaceDay();
+  });
+});
+
+// ======== LINEUP EDITOR ========
+function openLineupEditor(race){
+  const id=raceId(race);
+  const existing=currentLineups[id]||{seats:{},drummer:'',sweep:'',notes:''};
+  const overlay=document.createElement('div');
+  overlay.className='le-overlay';
+  const sheet=document.createElement('div');
+  sheet.className='le-sheet';
+
+  // Header
+  const header=document.createElement('div');header.className='le-header';
+  const close=document.createElement('button');close.className='le-close';close.textContent='\u00D7';close.setAttribute('aria-label','Close');
+  close.addEventListener('click',()=>overlay.remove());
+  const titleDiv=document.createElement('div');titleDiv.className='le-title';
+  const h=document.createElement('h3');
+  const m=race.title.match(/Race\s+(#?[\d\/\-]+)/);
+  h.textContent='Lineup '+(m?m[1]:'');
+  const p=document.createElement('p');
+  const tSplit=race.t.split(':');let hh=parseInt(tSplit[0]);const mm=tSplit[1];const ap=hh>=12?'pm':'am';hh=hh%12||12;
+  p.textContent=race.title.replace(/Race\s+#?[\d\/\-]+\s*-?\s*/,'')+' \u00B7 '+hh+':'+mm+ap;
+  titleDiv.appendChild(h);titleDiv.appendChild(p);
+  header.appendChild(close);header.appendChild(titleDiv);
+
+  // Body
+  const body=document.createElement('div');body.className='le-body';
+
+  // Conflict check
+  const conflicts=checkConflicts(race,existing);
+  if(conflicts.length){
+    const warn=document.createElement('div');
+    warn.className='le-conflict-banner';
+    warn.textContent='\u26A0 '+conflicts.join(', ')+' also in overlapping races';
+    body.appendChild(warn);
+  }
+
+  const boat=document.createElement('div');boat.className='le-boat';
+  const labels=document.createElement('div');labels.className='le-boat-labels';
+  labels.innerHTML='<span>&nbsp;</span><span>LEFT</span><span>RIGHT</span>';
+  boat.appendChild(labels);
+
+  for(let i=1;i<=5;i++){
+    const r=document.createElement('div');r.className='le-row';
+    const rn=document.createElement('div');rn.className='le-row-num';rn.textContent=i;
+    r.appendChild(rn);
+    ['L','R'].forEach(side=>{
+      const key=i+side;
+      const seat=document.createElement('div');
+      seat.className='le-seat';
+      const name=existing.seats[key]||'';
+      if(name){
+        seat.classList.add('filled');
+        seat.textContent=name;
+        if(conflicts.includes(name))seat.classList.add('conflict');
+      }else{
+        seat.textContent='\uFF0B';
+      }
+      seat.addEventListener('click',()=>pickPaddler(race,key,name,(chosen)=>{
+        saveLineupSeat(id,key,chosen,existing);
+        overlay.remove();setTimeout(()=>openLineupEditor(race),50);
+      }));
+      r.appendChild(seat);
+    });
+    boat.appendChild(r);
+  }
+
+  // Drummer
+  const drumWrap=document.createElement('div');drumWrap.className='le-special';
+  const drumLbl=document.createElement('div');drumLbl.className='le-special-lbl';drumLbl.textContent='Drummer';
+  const drumSeat=document.createElement('div');drumSeat.className='le-seat';
+  if(existing.drummer){drumSeat.classList.add('filled');drumSeat.textContent=existing.drummer;if(conflicts.includes(existing.drummer))drumSeat.classList.add('conflict');}
+  else drumSeat.textContent='\uFF0B';
+  drumSeat.addEventListener('click',()=>pickPaddler(race,'drummer',existing.drummer,chosen=>{
+    saveLineupSeat(id,'drummer',chosen,existing);overlay.remove();setTimeout(()=>openLineupEditor(race),50);
+  }));
+  drumWrap.appendChild(drumLbl);drumWrap.appendChild(drumSeat);
+  boat.appendChild(drumWrap);
+
+  // Sweep
+  const swWrap=document.createElement('div');swWrap.className='le-special';
+  const swLbl=document.createElement('div');swLbl.className='le-special-lbl';swLbl.textContent='Sweep';
+  const swSeat=document.createElement('div');swSeat.className='le-seat';
+  if(existing.sweep){swSeat.classList.add('filled');swSeat.textContent=existing.sweep;if(conflicts.includes(existing.sweep))swSeat.classList.add('conflict');}
+  else swSeat.textContent='\uFF0B';
+  swSeat.addEventListener('click',()=>pickPaddler(race,'sweep',existing.sweep,chosen=>{
+    saveLineupSeat(id,'sweep',chosen,existing);overlay.remove();setTimeout(()=>openLineupEditor(race),50);
+  }));
+  swWrap.appendChild(swLbl);swWrap.appendChild(swSeat);
+  boat.appendChild(swWrap);
+
+  body.appendChild(boat);
+
+  // Notes
+  const notesLbl=document.createElement('div');notesLbl.style.cssText='font-size:.7rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px';
+  notesLbl.textContent='Notes';
+  const notes=document.createElement('textarea');notes.className='le-notes';notes.placeholder='Any notes for this race...';
+  notes.value=existing.notes||'';
+  notes.addEventListener('blur',()=>{
+    lineupsRef.doc(id).set({notes:notes.value,raceId:id,race:race.title,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  });
+  body.appendChild(notesLbl);body.appendChild(notes);
+
+  sheet.appendChild(header);sheet.appendChild(body);
+  overlay.appendChild(sheet);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  document.body.appendChild(overlay);
+}
+
+function saveLineupSeat(id,key,chosen,existing){
+  const data={raceId:id,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  if(key==='drummer'||key==='sweep'){
+    data[key]=chosen||firebase.firestore.FieldValue.delete();
+  }else{
+    const seats={...(existing.seats||{})};
+    if(chosen)seats[key]=chosen;else delete seats[key];
+    data.seats=seats;
+  }
+  lineupsRef.doc(id).set(data,{merge:true}).then(()=>showToast(chosen?'Assigned '+chosen:'Cleared'));
+}
+
+function checkConflicts(race,lineup){
+  const raceStart=new Date(race.d+'T'+race.t+':00+10:00').getTime();
+  const raceEnd=new Date(race.d+'T'+race.end+':00+10:00').getTime();
+  const myPaddlers=Object.values(lineup.seats||{}).concat([lineup.drummer,lineup.sweep]).filter(x=>x);
+  const conflicted=new Set();
+  RACE_DATA.forEach(r=>{
+    const id=raceId(r);
+    if(r===race)return;
+    const rStart=new Date(r.d+'T'+r.t+':00+10:00').getTime();
+    const rEnd=new Date(r.d+'T'+r.end+':00+10:00').getTime();
+    // Overlap check + buffer of 30min
+    if(rEnd+30*60000<raceStart||rStart-30*60000>raceEnd)return;
+    const l=currentLineups[id];
+    if(!l)return;
+    const theirPaddlers=Object.values(l.seats||{}).concat([l.drummer,l.sweep]).filter(x=>x);
+    myPaddlers.forEach(p=>{if(theirPaddlers.includes(p))conflicted.add(p);});
+  });
+  return [...conflicted];
+}
+
+function pickPaddler(race,seatKey,current,onPick){
+  const overlay=document.createElement('div');
+  overlay.className='pp-overlay';
+  const sheet=document.createElement('div');sheet.className='pp-sheet';
+  const head=document.createElement('div');head.className='pp-head';
+  const h=document.createElement('h4');h.textContent='Pick paddler';head.appendChild(h);
+  const search=document.createElement('input');search.className='pp-search';search.placeholder='Search...';search.type='text';
+  head.appendChild(search);
+  const listWrap=document.createElement('div');listWrap.className='pp-list';
+  function render(){
+    listWrap.textContent='';
+    const q=search.value.toLowerCase();
+    // Compute taken set for this race
+    const raceId_=raceId(race);
+    const myLineup=currentLineups[raceId_]||{seats:{},drummer:'',sweep:''};
+    const taken={};
+    Object.entries(myLineup.seats||{}).forEach(([k,v])=>{if(v&&k!==seatKey)taken[v]='seat '+k;});
+    if(myLineup.drummer&&seatKey!=='drummer')taken[myLineup.drummer]='drummer';
+    if(myLineup.sweep&&seatKey!=='sweep')taken[myLineup.sweep]='sweep';
+    currentRoster.filter(n=>n.toLowerCase().includes(q)).forEach(name=>{
+      const item=document.createElement('div');
+      item.className='pp-item';
+      if(taken[name])item.classList.add('taken');
+      const nameSpan=document.createElement('span');nameSpan.textContent=name;
+      const meta=document.createElement('small');
+      if(name===current)meta.textContent='(current)';
+      else if(taken[name])meta.textContent='in '+taken[name];
+      nameSpan.appendChild(meta);
+      item.appendChild(nameSpan);
+      item.addEventListener('click',()=>{overlay.remove();onPick(name);});
+      listWrap.appendChild(item);
+    });
+  }
+  search.addEventListener('input',render);
+  render();
+  sheet.appendChild(head);sheet.appendChild(listWrap);
+  if(current){
+    const rm=document.createElement('button');rm.className='pp-remove';rm.textContent='Remove from seat';
+    rm.addEventListener('click',()=>{overlay.remove();onPick('');});
+    sheet.appendChild(rm);
+  }
+  overlay.appendChild(sheet);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  document.body.appendChild(overlay);
+  setTimeout(()=>search.focus(),100);
+}
+
+// ======== YOUR NEXT RACE (Home) ========
+function renderYourNextRace(){
+  const c=document.getElementById('ynr-container');
+  if(!c)return;
+  c.textContent='';
+  if(!myPaddler){
+    const btn=document.createElement('button');
+    btn.className='ynr-pick-btn';
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Pick your name to see your races';
+    btn.addEventListener('click',pickMyName);
+    c.appendChild(btn);
+    return;
+  }
+  // Find next race user is in
+  const now=new Date();
+  const mine=RACE_DATA.map(r=>{
+    const l=currentLineups[raceId(r)];
+    if(!l)return null;
+    const all=Object.values(l.seats||{}).concat([l.drummer,l.sweep]);
+    if(!all.includes(myPaddler))return null;
+    const start=new Date(r.d+'T'+r.t+':00+10:00');
+    if(start<now)return null;
+    let seat='';
+    Object.entries(l.seats||{}).forEach(([k,v])=>{if(v===myPaddler)seat='Seat '+k.slice(0,1)+' '+(k.endsWith('L')?'Left':'Right');});
+    if(l.drummer===myPaddler)seat='Drummer';
+    if(l.sweep===myPaddler)seat='Sweep';
+    return {race:r,start,seat,lineup:l};
+  }).filter(x=>x).sort((a,b)=>a.start-b.start);
+
+  if(mine.length===0){
+    const card=document.createElement('div');
+    card.className='info-card';card.style.marginBottom='12px';
+    const ic=document.createElement('div');ic.className='info-icon';ic.style.background='var(--gold-soft)';ic.textContent='\u{1F44B}';
+    const bd=document.createElement('div');bd.className='info-body';
+    const h3=document.createElement('h3');h3.textContent='Hi '+myPaddler+'!';
+    const p=document.createElement('p');p.textContent='No upcoming races assigned yet.';
+    const chg=document.createElement('button');
+    chg.style.cssText='background:none;border:none;color:var(--blue);font-size:.75rem;font-weight:600;padding:6px 0 0;cursor:pointer;font-family:inherit';
+    chg.textContent='Change name';chg.addEventListener('click',pickMyName);
+    bd.appendChild(h3);bd.appendChild(p);bd.appendChild(chg);
+    card.appendChild(ic);card.appendChild(bd);
+    c.appendChild(card);
+    return;
+  }
+  const m=mine[0];
+  const card=document.createElement('div');
+  card.className='ynr-card';
+  const head=document.createElement('div');head.className='ynr-head';
+  const lbl=document.createElement('div');lbl.className='ynr-label';lbl.textContent='Your Next Race';
+  const cd=document.createElement('div');cd.className='ynr-cd';
+  const diff=m.start-now;const mins=Math.round(diff/60000);
+  if(mins<60)cd.textContent='in '+mins+'m';else{const hh=Math.floor(mins/60),mm=mins%60;cd.textContent=mm?'in '+hh+'h'+mm+'m':'in '+hh+'h';}
+  head.appendChild(lbl);head.appendChild(cd);
+  const title=document.createElement('div');title.className='ynr-title';
+  title.textContent=m.race.title;
+  const time=document.createElement('div');time.className='ynr-time';
+  const tSplit=m.race.t.split(':');let hh=parseInt(tSplit[0]);const mm2=tSplit[1];const ap=hh>=12?'pm':'am';hh=hh%12||12;
+  const dayLbl={'2026-04-17':'Fri 17','2026-04-18':'Sat 18','2026-04-19':'Sun 19','2026-04-20':'Mon 20'}[m.race.d]||m.race.d;
+  time.textContent=dayLbl+' \u00B7 '+hh+':'+mm2+ap+' \u00B7 '+m.race.loc;
+  const seat=document.createElement('div');seat.className='ynr-seat';seat.textContent='\uD83D\uDEA3 '+m.seat;
+  const btn=document.createElement('button');btn.className='ynr-lineup-btn';btn.textContent='View full lineup';
+  btn.addEventListener('click',()=>openLineupEditor(m.race));
+  card.appendChild(head);card.appendChild(title);card.appendChild(time);card.appendChild(seat);card.appendChild(btn);
+  c.appendChild(card);
+}
+
+function pickMyName(){
+  const overlay=document.createElement('div');overlay.className='pp-overlay';
+  const sheet=document.createElement('div');sheet.className='pp-sheet';
+  const head=document.createElement('div');head.className='pp-head';
+  const h=document.createElement('h4');h.textContent='Who are you?';head.appendChild(h);
+  const search=document.createElement('input');search.className='pp-search';search.type='text';search.placeholder='Search your name...';
+  head.appendChild(search);
+  const listWrap=document.createElement('div');listWrap.className='pp-list';
+  function render(){
+    listWrap.textContent='';
+    const q=search.value.toLowerCase();
+    currentRoster.filter(n=>n.toLowerCase().includes(q)).forEach(name=>{
+      const item=document.createElement('div');item.className='pp-item';
+      item.textContent=name;
+      item.addEventListener('click',()=>{
+        myPaddler=name;localStorage.setItem('mudbc-me',name);
+        overlay.remove();renderYourNextRace();showToast('Hi '+name+'!');
+      });
+      listWrap.appendChild(item);
+    });
+  }
+  search.addEventListener('input',render);render();
+  if(myPaddler){
+    const rm=document.createElement('button');rm.className='pp-remove';rm.textContent='Clear my name';
+    rm.addEventListener('click',()=>{myPaddler=null;localStorage.removeItem('mudbc-me');overlay.remove();renderYourNextRace();});
+    sheet.appendChild(head);sheet.appendChild(listWrap);sheet.appendChild(rm);
+  }else{
+    sheet.appendChild(head);sheet.appendChild(listWrap);
+  }
+  overlay.appendChild(sheet);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  document.body.appendChild(overlay);
+  setTimeout(()=>search.focus(),100);
+}
+
+// Refresh Your Next Race every 30s for countdown
+setInterval(()=>{if(document.getElementById('pg-home').classList.contains('active'))renderYourNextRace();},30000);
+// Refresh race day every 30s for LIVE/NEXT badges
+setInterval(()=>{if(document.getElementById('pg-raceday').classList.contains('active'))renderRaceDay();},30000);
+
+// Initial renders
+renderPaddlers();renderRaceDay();renderYourNextRace();
+
+// ======== ROOMS COLLAPSIBLE ON HOME ========
+(function(){
+  const btn=document.getElementById('roomsToggle');
+  const body=document.getElementById('roomsBody');
+  if(!btn||!body)return;
+  // Populate with clones of room cards from the rooms page
+  const src=document.querySelectorAll('#pg-rooms .room-card2');
+  src.forEach(card=>body.appendChild(card.cloneNode(true)));
+  btn.addEventListener('click',()=>{
+    btn.classList.toggle('open');
+    body.classList.toggle('open');
   });
 })();
 
