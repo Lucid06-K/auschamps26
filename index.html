@@ -2271,8 +2271,8 @@ function renderRaceRow(r,now){
   if(resultValue){status.classList.add('result');status.textContent='\u{1F3C6} '+resultValue;}
   else if(isLive){status.classList.add('live');status.textContent='LIVE';}
   else if(isNext){status.classList.add('next');status.textContent='NEXT';}
-  else if(total===22){status.classList.add('full');status.textContent='22/22';}
-  else if(total>0){status.classList.add('partial');status.textContent=total+'/22';}
+  else if(total>=12){status.classList.add('full');status.textContent='12/12';}
+  else if(total>0){status.classList.add('partial');status.textContent=total+'/12';}
   else{status.classList.add('empty');status.textContent='open';}
 
   row.appendChild(num);row.appendChild(time);row.appendChild(info);row.appendChild(status);
