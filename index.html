@@ -918,7 +918,6 @@ body{
 /* Tutorial overlay */
 .tut-overlay{
   position:fixed;inset:0;z-index:9000;pointer-events:none;
-  animation:toastIn .2s ease;
 }
 .tut-overlay .tut-tooltip{pointer-events:auto}
 .tut-backdrop{
@@ -931,8 +930,10 @@ body{
   border:1px solid var(--purple);border-radius:var(--r);
   padding:16px 18px;max-width:320px;width:calc(100% - 40px);
   box-shadow:0 8px 32px rgba(0,0,0,.5),0 0 0 4px rgba(167,139,250,.15);
-  z-index:9001;
+  z-index:9001;opacity:0;transition:opacity .2s ease;
+  top:-9999px;left:-9999px;
 }
+.tut-tooltip.visible{opacity:1}
 .tut-arrow{
   position:absolute;width:12px;height:12px;background:var(--bg2);
   border:1px solid var(--purple);transform:rotate(45deg);
@@ -1018,7 +1019,6 @@ body{
   <div class="hero-page">
     <div class="hero-top">
       <img src="logo.png" alt="MUDBC Dragon Logo" class="hero-logo">
-      <div class="hero-club"><span class="dot"></span> MUDBC</div>
       <h1 class="hero-title">AusChamps<span>2 0 2 6</span></h1>
       <p class="hero-venue"><strong>Lake Kawana</strong>, Sunshine Coast QLD<br>17 &ndash; 20 April 2026</p>
     </div>
@@ -2829,20 +2829,21 @@ function showTutorialStep(step){
   document.body.appendChild(overlay);
   tutOverlay=overlay;
 
-  // Position tooltip + highlight
+  // Position tooltip + highlight (tooltip starts invisible off-screen)
   if(step.selector){
     const target=document.querySelector(step.selector);
     if(target){
       target.classList.add('tut-highlight');
       tutPrevHighlight=target;
       target.scrollIntoView({behavior:'smooth',block:'center'});
-      setTimeout(()=>positionTooltip(tooltip,target),350);
+      setTimeout(()=>{positionTooltip(tooltip,target);tooltip.classList.add('visible');},400);
     }else{
-      // Target not found - center tooltip
       centerTooltip(tooltip);
+      requestAnimationFrame(()=>tooltip.classList.add('visible'));
     }
   }else{
     centerTooltip(tooltip);
+    requestAnimationFrame(()=>tooltip.classList.add('visible'));
   }
 }
 
@@ -2852,17 +2853,13 @@ function positionTooltip(tooltip,target){
   const viewportH=window.innerHeight;
   const viewportW=window.innerWidth;
   let top,left;
-  // Try to place below
   if(rect.bottom+tRect.height+20<viewportH-80){
     top=rect.bottom+14;
   }else if(rect.top-tRect.height-20>80){
-    // Place above
     top=rect.top-tRect.height-14;
   }else{
-    // Place at center vertically
     top=Math.max(20,(viewportH-tRect.height)/2);
   }
-  // Horizontal centering
   left=Math.max(20,Math.min(viewportW-tRect.width-20,rect.left+(rect.width/2)-(tRect.width/2)));
   tooltip.style.top=top+'px';
   tooltip.style.left=left+'px';
