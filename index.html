@@ -1065,6 +1065,19 @@ body{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;margin-left:auto;transition:transform .2s" class="rooms-btn-chev"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="rooms-body" id="roomsBody"></div>
+
+      <button class="rooms-btn" id="mapToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>Venue Map</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;margin-left:auto;transition:transform .2s" class="rooms-btn-chev"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="rooms-body" id="mapBody">
+        <div style="font-size:.78rem;color:var(--text2);margin-bottom:10px;line-height:1.5">
+          Key locations at Lake Kawana: <strong>Boat Loading</strong>, <strong>Pre-Marshalling</strong>, <strong>Marshalling</strong>, <strong>Team Tents</strong>, <strong>Finish Tower</strong>, <strong>Race Admin</strong>, and <strong>First Aid</strong>.
+        </div>
+        <img src="venue-map.png" alt="Lake Kawana venue map showing marshalling, team tents, boat loading and key locations" style="width:100%;border-radius:var(--r3);border:1px solid var(--border);cursor:zoom-in" id="venueMapImg">
+        <div style="font-size:.7rem;color:var(--text3);margin-top:8px;text-align:center">Tap image to enlarge</div>
+      </div>
     </div>
   </div>
 </div>
@@ -2620,9 +2633,14 @@ function renderYourNextRace(){
   const dayLbl={'2026-04-17':'Fri 17','2026-04-18':'Sat 18','2026-04-19':'Sun 19','2026-04-20':'Mon 20'}[m.race.d]||m.race.d;
   time.textContent=dayLbl+' \u00B7 '+hh+':'+mm2+ap+' \u00B7 '+m.race.loc;
   const seat=document.createElement('div');seat.className='ynr-seat';seat.textContent='\uD83D\uDEA3 '+m.seat;
-  const btn=document.createElement('button');btn.className='ynr-lineup-btn';btn.textContent='View full lineup';
+  const btnRow=document.createElement('div');btnRow.style.cssText='display:flex;gap:8px';
+  const btn=document.createElement('button');btn.className='ynr-lineup-btn';btn.style.flex='1';btn.textContent='View lineup';
   btn.addEventListener('click',()=>openLineupEditor(m.race));
-  card.appendChild(head);card.appendChild(title);card.appendChild(time);card.appendChild(seat);card.appendChild(btn);
+  const mapBtn=document.createElement('button');mapBtn.className='ynr-lineup-btn venue-zoom-trigger';
+  mapBtn.style.cssText='flex-shrink:0;display:flex;align-items:center;gap:4px';
+  mapBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;pointer-events:none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span style="pointer-events:none">Venue</span>';
+  btnRow.appendChild(btn);btnRow.appendChild(mapBtn);
+  card.appendChild(head);card.appendChild(title);card.appendChild(time);card.appendChild(seat);card.appendChild(btnRow);
   c.appendChild(card);
 }
 
@@ -2680,6 +2698,34 @@ renderPaddlers();renderRaceDay();renderYourNextRace();
   btn.addEventListener('click',()=>{
     btn.classList.toggle('open');
     body.classList.toggle('open');
+  });
+
+  // Map toggle
+  const mapBtn=document.getElementById('mapToggle');
+  const mapBody=document.getElementById('mapBody');
+  if(mapBtn&&mapBody){
+    mapBtn.addEventListener('click',()=>{
+      mapBtn.classList.toggle('open');
+      mapBody.classList.toggle('open');
+    });
+  }
+
+  // Tap venue map image to view full-screen
+  document.addEventListener('click',e=>{
+    if(e.target.id==='venueMapImg'||e.target.classList.contains('venue-zoom-trigger')){
+      const overlay=document.createElement('div');
+      overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;animation:toastIn .2s ease';
+      const img=document.createElement('img');
+      img.src='venue-map.png';img.alt='Venue map';
+      img.style.cssText='max-width:100%;max-height:100%;border-radius:8px;object-fit:contain';
+      overlay.appendChild(img);
+      const close=document.createElement('button');
+      close.textContent='\u00D7';close.setAttribute('aria-label','Close');
+      close.style.cssText='position:absolute;top:calc(20px + env(safe-area-inset-top,0px));right:20px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.5rem;cursor:pointer;font-family:inherit';
+      overlay.appendChild(close);
+      overlay.addEventListener('click',()=>overlay.remove());
+      document.body.appendChild(overlay);
+    }
   });
 })();
 
