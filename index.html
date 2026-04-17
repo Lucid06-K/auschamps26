@@ -949,18 +949,15 @@ body{
   border-color:var(--blue);
 }
 .pd-grip{
-  display:grid;grid-template-columns:6px 6px;grid-template-rows:6px 6px 6px;
-  gap:4px;width:16px;height:26px;cursor:grab;flex-shrink:0;
-  align-content:center;justify-content:center;
+  width:20px;height:30px;cursor:grab;flex-shrink:0;
   -webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;
+  background-image:radial-gradient(circle,var(--text2) 2px,transparent 2.5px);
+  background-size:8px 8px;background-position:center;
+  background-repeat:repeat;
 }
 .pd-grip:active{cursor:grabbing}
-.pd-grip>span{
-  display:block;width:6px;height:6px;border-radius:50%;
-  background:var(--text2);pointer-events:none;transition:background .15s;
-}
-.pd-grip:hover>span,.pd-grip:active>span{background:var(--text)}
-.pd-item.dragging .pd-grip>span{background:var(--blue)}
+.pd-grip:hover,.pd-grip:active{background-image:radial-gradient(circle,var(--text) 2px,transparent 2.5px)}
+.pd-item.dragging .pd-grip{background-image:radial-gradient(circle,var(--blue) 2px,transparent 2.5px)}
 .pd-name{flex:1;font-size:.88rem;font-weight:500}
 .pd-count{font-size:.7rem;color:var(--text3);background:var(--bg3);padding:3px 8px;border-radius:100px}
 .pd-del{
@@ -2282,7 +2279,7 @@ function renderPaddlers(){
       row.className='pd-item';row.dataset.name=name;
       const grip=document.createElement('div');grip.className='pd-grip';
       grip.setAttribute('aria-label','Drag to reorder');
-      for(let k=0;k<6;k++){const dot=document.createElement('span');grip.appendChild(dot);}
+      grip.setAttribute('role','button');
       const nm=document.createElement('div');
       nm.className='pd-name';nm.textContent=name;
       const count=countPaddlerRaces(name);
@@ -2752,7 +2749,7 @@ function openLineupEditor(race){
   boat.appendChild(drumWrap);
 
   const labels=document.createElement('div');labels.className='le-boat-labels';
-  labels.innerHTML='<span>&nbsp;</span><span>LEFT</span><span>RIGHT</span>';
+  labels.innerHTML='<span>SEAT</span><span>LEFT</span><span>RIGHT</span>';
   boat.appendChild(labels);
 
   for(let i=1;i<=10;i++){
