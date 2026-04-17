@@ -1392,7 +1392,10 @@ body{
         <button id="pdBulkBtn" style="background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:var(--r3);font-weight:600;cursor:pointer;font-family:inherit;width:100%">Add all</button>
       </div>
     </div>
-    <input type="text" id="pdSearch" placeholder="Search roster..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r3);padding:10px 14px;color:var(--text);font-size:.85rem;font-family:inherit;margin-bottom:10px">
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input type="text" id="pdSearch" placeholder="Search roster..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r3);padding:10px 14px;color:var(--text);font-size:.85rem;font-family:inherit">
+      <button id="pdClearAll" style="background:var(--red-soft);border:1px solid var(--red-border);color:var(--red);padding:0 14px;border-radius:var(--r3);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Remove all</button>
+    </div>
     <div id="pdList"></div>
   </div>
 </div>
@@ -2212,7 +2215,15 @@ lineupsRef.onSnapshot(snap=>{
 function renderPaddlers(){
   const list=document.getElementById('pdList');
   if(!list)return;
-  const search=(document.getElementById('pdSearch').value||'').toLowerCase();
+  // Preserve scroll position of the page during re-render
+  const scrollY=window.scrollY;
+  const searchEl=document.getElementById('pdSearch');
+  const newEl=document.getElementById('pdNew');
+  const bulkEl=document.getElementById('pdBulkInput');
+  const activeId=document.activeElement?document.activeElement.id:'';
+  const selStart=document.activeElement&&document.activeElement.selectionStart;
+  const selEnd=document.activeElement&&document.activeElement.selectionEnd;
+  const search=(searchEl.value||'').toLowerCase();
   list.textContent='';
   const filtered=currentRoster.filter(n=>n.toLowerCase().includes(search));
   document.getElementById('pdCount').textContent=currentRoster.length+' paddlers';
@@ -2221,25 +2232,36 @@ function renderPaddlers(){
     empty.style.cssText='text-align:center;color:var(--text3);padding:20px;font-size:.85rem';
     empty.textContent=search?'No matches':'No paddlers yet';
     list.appendChild(empty);
-    return;
-  }
-  filtered.forEach(name=>{
-    const row=document.createElement('div');
-    row.className='pd-item';
-    const nm=document.createElement('div');
-    nm.className='pd-name';nm.textContent=name;
-    const count=countPaddlerRaces(name);
-    const ct=document.createElement('div');
-    ct.className='pd-count';ct.textContent=count+' race'+(count===1?'':'s');
-    const del=document.createElement('button');
-    del.className='pd-del';del.textContent='\u00D7';del.setAttribute('aria-label','Remove '+name);
-    del.addEventListener('click',()=>{
-      const newNames=currentRoster.filter(n=>n!==name);
-      rosterRef.set({names:newNames,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-      showToast('Removed '+name);
+  }else{
+    filtered.forEach(name=>{
+      const row=document.createElement('div');
+      row.className='pd-item';
+      const nm=document.createElement('div');
+      nm.className='pd-name';nm.textContent=name;
+      const count=countPaddlerRaces(name);
+      const ct=document.createElement('div');
+      ct.className='pd-count';ct.textContent=count+' race'+(count===1?'':'s');
+      const del=document.createElement('button');
+      del.className='pd-del';del.textContent='\u00D7';del.setAttribute('aria-label','Remove '+name);
+      del.addEventListener('click',()=>{
+        const newNames=currentRoster.filter(n=>n!==name);
+        rosterRef.set({names:newNames,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        showToast('Removed '+name);
+      });
+      row.appendChild(nm);row.appendChild(ct);row.appendChild(del);
+      list.appendChild(row);
     });
-    row.appendChild(nm);row.appendChild(ct);row.appendChild(del);
-    list.appendChild(row);
+  }
+  // Restore scroll + focus + selection
+  requestAnimationFrame(()=>{
+    window.scrollTo(0,scrollY);
+    if(activeId&&['pdSearch','pdNew','pdBulkInput'].includes(activeId)){
+      const el=document.getElementById(activeId);
+      if(el&&document.activeElement!==el){
+        el.focus();
+        try{if(selStart!=null)el.setSelectionRange(selStart,selEnd);}catch(e){}
+      }
+    }
   });
 }
 
@@ -2266,6 +2288,19 @@ document.getElementById('pdSearch').addEventListener('input',renderPaddlers);
 document.getElementById('pdBulkToggle').addEventListener('click',()=>{
   document.getElementById('pdBulkWrap').classList.toggle('open');
 });
+document.getElementById('pdClearAll').addEventListener('click',function(){
+  const btn=this;
+  if(btn.dataset.confirm==='1'){
+    rosterRef.set({names:[],updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
+      .then(()=>showToast('Roster cleared'));
+    btn.dataset.confirm='';btn.textContent='Remove all';btn.style.background='';btn.style.color='';
+  }else{
+    btn.dataset.confirm='1';btn.textContent='Tap to confirm';
+    btn.style.background='var(--red)';btn.style.color='#fff';
+    setTimeout(()=>{if(btn.dataset.confirm==='1'){btn.dataset.confirm='';btn.textContent='Remove all';btn.style.background='';btn.style.color='';}},3000);
+  }
+});
+
 document.getElementById('pdBulkBtn').addEventListener('click',()=>{
   const txt=document.getElementById('pdBulkInput').value;
   const names=txt.split('\n').map(n=>n.trim()).filter(n=>n&&!currentRoster.includes(n));
