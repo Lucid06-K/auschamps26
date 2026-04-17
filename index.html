@@ -2292,7 +2292,8 @@ document.querySelectorAll('.rd-filter').forEach(btn=>{
 // ======== LINEUP EDITOR ========
 function openLineupEditor(race){
   const id=raceId(race);
-  const existing=currentLineups[id]||{seats:{},drummer:'',sweep:'',notes:''};
+  const raw=currentLineups[id]||{};
+  const existing={seats:raw.seats||{},drummer:raw.drummer||'',sweep:raw.sweep||'',notes:raw.notes||''};
   const overlay=document.createElement('div');
   overlay.className='le-overlay';
   const sheet=document.createElement('div');
