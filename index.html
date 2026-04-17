@@ -720,6 +720,18 @@ body{
 .rd-status.next{background:var(--gold);color:#000}
 .rd-status.result{background:var(--gold);color:#000;font-size:.72rem}
 
+/* Clear all paddlers button */
+.le-clear-all-btn{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;margin-bottom:14px;padding:10px 14px;
+  background:var(--red-soft);border:1px solid var(--red-border);
+  border-radius:var(--r3);color:var(--red);
+  font-size:.78rem;font-weight:700;font-family:inherit;cursor:pointer;
+  transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.le-clear-all-btn:active{transform:scale(.98)}
+.le-clear-all-btn.confirming{background:var(--red);color:#fff;border-color:var(--red)}
+
 /* Lineup editor exit button */
 .le-exit-btn{
   display:flex;align-items:center;justify-content:center;gap:8px;
@@ -2644,6 +2656,44 @@ function openLineupEditor(race){
   loSaveBtn.addEventListener('click',()=>saveAsLoadout(existing));
   loTools.appendChild(loApplyBtn);loTools.appendChild(loSaveBtn);
   body.appendChild(loTools);
+
+  // Clear all paddlers button
+  const clearAllBtn=document.createElement('button');
+  clearAllBtn.className='le-clear-all-btn';
+  clearAllBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg> Clear all paddlers';
+  clearAllBtn.addEventListener('click',()=>{
+    if(clearAllBtn.dataset.confirm==='1'){
+      // Clear local state
+      existing.seats={};
+      existing.drummer='';
+      existing.sweep='';
+      // Write to Firestore
+      if(window._activeLineupOverlay&&window._activeLineupOverlay._markLocalSave){
+        window._activeLineupOverlay._markLocalSave();
+      }
+      lineupsRef.doc(id).set({
+        raceId:id,
+        seats:{},drummer:'',sweep:'',notes:existing.notes||'',
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      }).then(()=>showToast('All paddlers cleared'));
+      refreshAllSeats();
+      clearAllBtn.dataset.confirm='';
+      clearAllBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg> Clear all paddlers';
+      clearAllBtn.classList.remove('confirming');
+    }else{
+      clearAllBtn.dataset.confirm='1';
+      clearAllBtn.textContent='Tap again to confirm';
+      clearAllBtn.classList.add('confirming');
+      setTimeout(()=>{
+        if(clearAllBtn.dataset.confirm==='1'){
+          clearAllBtn.dataset.confirm='';
+          clearAllBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg> Clear all paddlers';
+          clearAllBtn.classList.remove('confirming');
+        }
+      },3000);
+    }
+  });
+  body.appendChild(clearAllBtn);
 
   const boat=document.createElement('div');boat.className='le-boat';
 
