@@ -1557,8 +1557,10 @@ function goTo(id){
 }
 function showPasswordModal(){
   const overlay=document.createElement('div');overlay.className='pp-overlay';
+  overlay.style.animation='none';
   const sheet=document.createElement('div');sheet.className='pp-sheet';
   sheet.style.borderRadius='16px 16px 0 0';
+  sheet.style.animation='none';
   const head=document.createElement('div');head.className='pp-head';
   const h=document.createElement('h4');h.innerHTML='\u{1F512} Coach Access';head.appendChild(h);
   const hint=document.createElement('div');
