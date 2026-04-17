@@ -905,13 +905,14 @@ body{
 
 /* Tutorial overlay */
 .tut-overlay{
-  position:fixed;inset:0;z-index:9000;pointer-events:auto;
+  position:fixed;inset:0;z-index:9000;pointer-events:none;
   animation:toastIn .2s ease;
 }
+.tut-overlay .tut-tooltip{pointer-events:auto}
 .tut-backdrop{
   position:absolute;inset:0;
-  background:rgba(0,0,0,.75);
-  transition:clip-path .3s ease;
+  background:transparent;
+  pointer-events:none;
 }
 .tut-tooltip{
   position:absolute;background:var(--bg2);
