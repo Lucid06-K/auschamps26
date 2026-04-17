@@ -949,15 +949,17 @@ body{
   border-color:var(--blue);
 }
 .pd-grip{
-  width:20px;height:30px;cursor:grab;flex-shrink:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;min-width:28px;height:32px;cursor:grab;flex-shrink:0;
+  color:var(--text2);font-size:1.2rem;line-height:1;letter-spacing:-2px;
   -webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;
-  background-image:radial-gradient(circle,var(--text2) 2px,transparent 2.5px);
-  background-size:8px 8px;background-position:center;
-  background-repeat:repeat;
+  font-family:-apple-system,system-ui,sans-serif;
+  background:var(--bg3);border-radius:6px;
 }
-.pd-grip:active{cursor:grabbing}
-.pd-grip:hover,.pd-grip:active{background-image:radial-gradient(circle,var(--text) 2px,transparent 2.5px)}
-.pd-item.dragging .pd-grip{background-image:radial-gradient(circle,var(--blue) 2px,transparent 2.5px)}
+.pd-grip::before{content:"\22EE\22EE";font-weight:900}
+.pd-grip:active{cursor:grabbing;background:var(--bg4)}
+.pd-grip:hover{color:var(--text)}
+.pd-item.dragging .pd-grip{color:var(--blue);background:rgba(59,130,246,.15)}
 .pd-name{flex:1;font-size:.88rem;font-weight:500}
 .pd-count{font-size:.7rem;color:var(--text3);background:var(--bg3);padding:3px 8px;border-radius:100px}
 .pd-del{
