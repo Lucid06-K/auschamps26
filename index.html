@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0f1a">
 <title>MUDBC AusChamps 2026</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -74,8 +76,18 @@ body{
 /* ---- Hero Page ---- */
 .hero-page{padding:0 20px}
 .hero-top{
-  padding:60px 0 0;text-align:center;
+  padding:40px 0 0;text-align:center;
 }
+.hero-logo{
+  width:110px;height:110px;display:block;margin:0 auto 16px;
+  opacity:.95;filter:drop-shadow(0 4px 20px rgba(59,130,246,.2));
+  animation:logoFloat 4s ease-in-out infinite;
+}
+@keyframes logoFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+}
+@media(max-width:480px){.hero-logo{width:90px;height:90px;margin-bottom:12px}}
 .hero-club{
   display:inline-flex;align-items:center;gap:6px;
   font-size:.75rem;font-weight:600;color:var(--blue);
@@ -1005,6 +1017,7 @@ body{
 <div class="page active" id="pg-home">
   <div class="hero-page">
     <div class="hero-top">
+      <img src="logo.png" alt="MUDBC Dragon Logo" class="hero-logo">
       <div class="hero-club"><span class="dot"></span> MUDBC</div>
       <h1 class="hero-title">AusChamps<span>2 0 2 6</span></h1>
       <p class="hero-venue"><strong>Lake Kawana</strong>, Sunshine Coast QLD<br>17 &ndash; 20 April 2026</p>
@@ -2880,7 +2893,7 @@ if('serviceWorker' in navigator){
 // Inject manifest
 (function(){
   const manifest={name:'MUDBC AusChamps 2026',short_name:'AusChamps',start_url:location.href,display:'standalone',background_color:'#0a0f1a',theme_color:'#0a0f1a',
-    icons:[{src:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>',sizes:'any',type:'image/svg+xml'}]};
+    icons:[{src:'logo.png',sizes:'512x512',type:'image/png',purpose:'any'}]};
   const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
   const link=document.createElement('link');
   link.rel='manifest';link.href=URL.createObjectURL(blob);
