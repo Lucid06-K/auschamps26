@@ -2310,11 +2310,18 @@ function renderPaddlers(){
 }
 
 function attachRosterDragHandlers(list){
-  let dragEl=null,activePointerId=null;
+  let dragEl=null;
+
+  const getClientY=e=>{
+    if(e.touches&&e.touches[0])return e.touches[0].clientY;
+    if(e.changedTouches&&e.changedTouches[0])return e.changedTouches[0].clientY;
+    return e.clientY;
+  };
+
   const onMove=e=>{
     if(!dragEl)return;
     e.preventDefault();
-    const y=e.clientY;
+    const y=getClientY(e);
     const siblings=[...list.querySelectorAll('.pd-item:not(.dragging)')];
     const next=siblings.find(sib=>{
       const rect=sib.getBoundingClientRect();
@@ -2323,31 +2330,39 @@ function attachRosterDragHandlers(list){
     if(next){list.insertBefore(dragEl,next);}
     else{list.appendChild(dragEl);}
   };
-  const onEnd=e=>{
+
+  const onEnd=()=>{
     if(!dragEl)return;
     dragEl.classList.remove('dragging');
     const newOrder=[...list.querySelectorAll('.pd-item')].map(r=>r.dataset.name);
-    dragEl=null;activePointerId=null;rosterDragActive=false;
-    document.removeEventListener('pointermove',onMove);
-    document.removeEventListener('pointerup',onEnd);
-    document.removeEventListener('pointercancel',onEnd);
+    dragEl=null;rosterDragActive=false;
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onEnd);
+    document.removeEventListener('touchmove',onMove);
+    document.removeEventListener('touchend',onEnd);
+    document.removeEventListener('touchcancel',onEnd);
     if(JSON.stringify(newOrder)!==JSON.stringify(currentRoster)){
       rosterRef.set({names:newOrder,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     }
   };
+
+  const startDrag=(grip,e)=>{
+    if(dragEl)return;
+    e.preventDefault();e.stopPropagation();
+    const item=grip.closest('.pd-item');
+    if(!item)return;
+    dragEl=item;rosterDragActive=true;
+    item.classList.add('dragging');
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onEnd);
+    document.addEventListener('touchmove',onMove,{passive:false});
+    document.addEventListener('touchend',onEnd);
+    document.addEventListener('touchcancel',onEnd);
+  };
+
   list.querySelectorAll('.pd-grip').forEach(grip=>{
-    grip.addEventListener('pointerdown',e=>{
-      if(activePointerId!==null)return;
-      e.preventDefault();
-      const item=grip.closest('.pd-item');
-      if(!item)return;
-      dragEl=item;activePointerId=e.pointerId;
-      rosterDragActive=true;
-      item.classList.add('dragging');
-      document.addEventListener('pointermove',onMove,{passive:false});
-      document.addEventListener('pointerup',onEnd);
-      document.addEventListener('pointercancel',onEnd);
-    });
+    grip.addEventListener('mousedown',e=>startDrag(grip,e));
+    grip.addEventListener('touchstart',e=>startDrag(grip,e),{passive:false});
   });
 }
 
