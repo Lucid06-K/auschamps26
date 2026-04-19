@@ -2068,12 +2068,16 @@ const ALLRACES=[];
 (function(){
   const resultsRef=db.collection('results');
 
-  // Build a map of race rows by key
+  // Build a map of race rows by composite key (day + race#) to avoid race# collisions across days
   const rowMap={};
   document.querySelectorAll('.race-row').forEach(row=>{
     const numEl=row.querySelector('.rr-num');
     if(!numEl)return;
-    const key=numEl.textContent.trim();
+    const raceNum=numEl.textContent.trim();
+    const panel=row.closest('.day-content');
+    const dayId=panel?panel.id:'';
+    const key=dayId+'_'+raceNum;
+    row.dataset.compositeKey=key;
     rowMap[key]=row;
 
     // Tap race row to log result
@@ -2095,6 +2099,8 @@ const ALLRACES=[];
         const docId=key.replace(/[/#]/g,'_');
         resultsRef.doc(docId).set({
           race:key,
+          raceNum:raceNum,
+          day:dayId,
           result:sel.value,
           updatedAt:firebase.firestore.FieldValue.serverTimestamp()
         },{merge:true}).then(()=>{
@@ -2175,7 +2181,7 @@ const ALLRACES=[];
         const plc=safeResult.toLowerCase();
         chip.className='result-chip'+(plc==='1st'?' rc-1st':plc==='2nd'?' rc-2nd':plc==='3rd'?' rc-3rd':'');
         const raceSpan=document.createElement('span');
-        raceSpan.className='rc-race';raceSpan.textContent=r.race;
+        raceSpan.className='rc-race';raceSpan.textContent=r.raceNum||r.race;
         const placeSpan=document.createElement('span');
         placeSpan.className='rc-place';placeSpan.textContent=safeResult;
         chip.appendChild(raceSpan);chip.appendChild(placeSpan);
@@ -2194,6 +2200,7 @@ const ALLRACES=[];
       rbEmpty.style.display='block';
     }else{
       rbEmpty.style.display='none';
+      const dayLbl={d1:'Fri 17',d2:'Sat 18',d3:'Sun 19',d4:'Mon 20'};
       allResults.forEach(r=>{
         const safeResult=ALLOWED_RESULTS.includes(r.result)?r.result:'?';
         const row=document.createElement('div');
@@ -2202,8 +2209,11 @@ const ALLRACES=[];
         const plcClass=plc==='1st'?'p1':plc==='2nd'?'p2':plc==='3rd'?'p3':'pother';
         const raceDiv=document.createElement('div');
         raceDiv.className='rb-race';
-        const cat=rowMap[r.race]?rowMap[r.race].querySelector('.rr-cat').childNodes[0].textContent.trim():'';
-        raceDiv.textContent=r.race+' \u00B7 '+cat;
+        const rowEl=rowMap[r.race];
+        const cat=rowEl?rowEl.querySelector('.rr-cat').childNodes[0].textContent.trim():'';
+        const raceLabel=r.raceNum||r.race;
+        const day=r.day&&dayLbl[r.day]?dayLbl[r.day]+' \u00B7 ':'';
+        raceDiv.textContent=day+raceLabel+(cat?' \u00B7 '+cat:'');
         const placeDiv=document.createElement('div');
         placeDiv.className='rb-place '+plcClass;
         placeDiv.textContent=safeResult;
@@ -2497,7 +2507,9 @@ function renderRaceRow(r,now){
   const total=seatCount+(hasDrummer?1:0)+(hasSweep?1:0);
   const raceNumMatch=r.title.match(/Race\s+(#[\d\/\-]+)/);
   const raceNum=raceNumMatch?raceNumMatch[1]:null;
-  const resultValue=raceNum&&window.currentResults?window.currentResults[raceNum]:null;
+  const dayIdMap={'2026-04-17':'d1','2026-04-18':'d2','2026-04-19':'d3','2026-04-20':'d4'};
+  const compositeKey=raceNum?(dayIdMap[r.d]||'')+'_'+raceNum:null;
+  const resultValue=compositeKey&&window.currentResults?window.currentResults[compositeKey]:null;
 
   const status=document.createElement('div');
   status.className='rd-status';
@@ -2821,10 +2833,12 @@ function openLineupEditor(race){
   const raceNumMatch=race.title.match(/Race\s+(#[\d\/\-]+)/);
   const raceNum=raceNumMatch?raceNumMatch[1]:null;
   if(raceNum){
+    const dayIdMap={'2026-04-17':'d1','2026-04-18':'d2','2026-04-19':'d3','2026-04-20':'d4'};
+    const compositeKey=(dayIdMap[race.d]||'')+'_'+raceNum;
     const resBox=document.createElement('div');resBox.className='le-result-box';
     const resTitle=document.createElement('div');resTitle.className='le-result-title';resTitle.textContent='\u{1F3C6} Race Result';
     resBox.appendChild(resTitle);
-    const existingResult=window.currentResults?window.currentResults[raceNum]:null;
+    const existingResult=window.currentResults?window.currentResults[compositeKey]:null;
     if(existingResult){
       const cur=document.createElement('div');cur.className='le-result-current';
       cur.textContent='\u2705 Finished: '+existingResult;
@@ -2841,9 +2855,10 @@ function openLineupEditor(race){
     saveRes.textContent=existingResult?'Update':'Save';
     saveRes.addEventListener('click',()=>{
       if(resSel.value==='--')return;
-      const docId=raceNum.replace(/[/#]/g,'_');
+      const docId=compositeKey.replace(/[/#]/g,'_');
       db.collection('results').doc(docId).set({
-        race:raceNum,result:resSel.value,
+        race:compositeKey,raceNum:raceNum,day:dayIdMap[race.d]||'',
+        result:resSel.value,
         updatedAt:firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true}).then(()=>showToast('Result saved & synced!'));
     });
@@ -2852,7 +2867,7 @@ function openLineupEditor(race){
       const clrRes=document.createElement('button');clrRes.className='le-result-clear';
       clrRes.textContent='Clear';
       clrRes.addEventListener('click',()=>{
-        const docId=raceNum.replace(/[/#]/g,'_');
+        const docId=compositeKey.replace(/[/#]/g,'_');
         db.collection('results').doc(docId).delete().then(()=>{showToast('Result cleared');overlay.remove();});
       });
       resRow.appendChild(clrRes);
